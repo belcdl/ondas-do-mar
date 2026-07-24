@@ -1,0 +1,14 @@
+{
+  "login": {
+    "title": "Iniciar sesión",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "submit": "Entrar",
+    "error": "Email o contraseña incorrectos"
+  },
+  "panel": {
+    "greeting": "Hola, {name}",
+    "logout": "Cerrar sesión",
+    "placeholder": "La gestión de apartamentos, tarifas y reservas estará disponible en una próxima iteración."
+  }
+}

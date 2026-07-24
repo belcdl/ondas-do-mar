@@ -1,0 +1,14 @@
+{
+  "login": {
+    "title": "Log in",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Log in",
+    "error": "Incorrect email or password"
+  },
+  "panel": {
+    "greeting": "Hello, {name}",
+    "logout": "Log out",
+    "placeholder": "Apartment, rate, and booking management will be available in a future iteration."
+  }
+}
