@@ -4,7 +4,7 @@ Aplicación web de alquiler y gestión de apartamentos vacacionales.
 
 ## Stack
 
-- **Frontend**: Vue 3 + Vite + TypeScript
+- **Frontend**: Vue 3 + Nuxt (SSR/SSG) + TypeScript
 - **Backend**: FastAPI (async SQLAlchemy 2, `psycopg` v3 driver)
 - **Database**: PostgreSQL 16 with the `pgvector` extension pre-enabled
 - **Migrations**: Alembic
@@ -38,8 +38,9 @@ and [`CLAUDE.md`](CLAUDE.md) for project conventions and guidelines.
    - Backend API: http://localhost:8000
      - `/health` — liveness (process is up)
      - `/health/db` — readiness (verifies PostgreSQL connectivity)
-     - `/owners` — Owner CRUD
-     - `/apartments` — Apartment CRUD (see `/docs` for the full Swagger schema)
+     - `/owners` — Owner CRUD (includes `GET /owners/{id}/apartments`)
+     - `/apartments` — Apartment CRUD
+     - `/bookings` — Booking CRUD + confirm/cancel/complete actions (see `/docs` for the full Swagger schema)
    - PostgreSQL: localhost:5432
 
 ## Project structure
@@ -47,7 +48,7 @@ and [`CLAUDE.md`](CLAUDE.md) for project conventions and guidelines.
 ```
 .
 ├── backend/        # FastAPI app, Alembic migrations, tests
-├── frontend/        # Vue 3 + Vite + TypeScript app
+├── frontend/        # Vue 3 + Nuxt + TypeScript app
 ├── docker/          # Shared Docker assets (e.g. Postgres init scripts)
 ├── docs/            # Architecture notes
 ├── docker-compose.yml
@@ -82,9 +83,8 @@ npm run type-check
 ## Status
 
 Infrastructure verified end-to-end (FastAPI, SQLAlchemy async, Alembic,
-Pydantic Settings). The Owner domain is implemented end-to-end as the first
-vertical slice — model, repository, service, and a full CRUD API
-(`POST/GET /owners`, `GET/PATCH /owners/{id}`, `POST /owners/{id}/deactivate`)
-— establishing the layering that Apartment and Booking will follow. See
-[`docs/decisions.md`](docs/decisions.md) for the reasoning behind individual
-choices. No other business entities exist yet.
+Pydantic Settings). Owner, Apartment, Booking, RateRule, User (JWT auth), and
+OwnerInvitation are all implemented end-to-end — model, repository, service,
+and a full CRUD/API layer each, following the same layering established by
+the original Owner slice. See [`docs/decisions.md`](docs/decisions.md) for
+the reasoning behind individual choices.

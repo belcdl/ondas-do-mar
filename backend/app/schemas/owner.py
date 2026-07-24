@@ -19,12 +19,14 @@ class OwnerUpdate(BaseModel):
     email: str | None = None
     phone: str | None = None
     is_active: bool | None = None
+    user_id: uuid.UUID | None = None
 
 
 class OwnerRead(OwnerBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
+    user_id: uuid.UUID | None
     is_active: bool
     created_at: datetime
     updated_at: datetime

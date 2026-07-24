@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     backend_cors_origins: list[str] = ["http://localhost:5173"]
 
     secret_key: str = "change-me-in-production"
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
+    invitation_token_expire_hours: int = 168
 
     stripe_secret_key: str | None = None
     stripe_publishable_key: str | None = None

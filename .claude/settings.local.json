@@ -1,7 +1,39 @@
 {
   "permissions": {
     "allow": [
-      "Bash(docker compose *)"
+      "Bash(docker compose *)",
+      "Bash(docker exec *)",
+      "Bash(git status *)",
+      "Bash(npm --version)",
+      "Bash(pnpm --version)",
+      "Bash(npx --yes nuxi@latest --version)",
+      "Bash(npx *)",
+      "Bash(git rm *)",
+      "Bash(npm view *)",
+      "Bash(npm install *)",
+      "Bash(npm ls *)",
+      "Bash(timeout 45 npm run dev -- --port 5199)",
+      "Bash(tee /tmp/nuxtdev.log)",
+      "Bash(rm -rf .nuxt)",
+      "Bash(timeout 40 npm run dev -- --port 5199)",
+      "Bash(curl -s -D - -o /dev/null http://localhost:5199/panel)",
+      "Read(//tmp/**)",
+      "Bash(curl -s -D - -o /dev/null http://localhost:5199/)",
+      "Bash(curl -s -D - -o /dev/null http://localhost:5199/login)",
+      "Bash(pkill -f \"nuxt dev\")",
+      "Bash(npm run *)",
+      "Bash(curl -s -D - -o /dev/null http://localhost:5173/)",
+      "Bash(curl -s -D - -o /tmp/docker_login.html http://localhost:5173/login)",
+      "Bash(curl -s -D - -o /dev/null http://localhost:5173/panel)",
+      "Bash(curl -s http://localhost:8000/health)",
+      "Bash(curl -s -X POST http://localhost:8000/auth/accept-invitation -H 'Content-Type: application/json' -d '{\"token\":\"-t55RSzDAUGZtR5G4MU6Qi2VOmJAgnrQHexPDFTCiWU\",\"password\":\"OwnerPass123!\",\"full_name\":\"Maria Owner\"}')",
+      "Skill(run)",
+      "Bash(chromium-cli --help)",
+      "Bash(npm init *)",
+      "Bash(node verify.mjs)",
+      "Bash(node verify2.mjs)",
+      "Bash(node debug.mjs)",
+      "Bash(echo \"TYPECHECK_EXIT=$?\")"
     ]
   }
 }

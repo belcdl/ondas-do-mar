@@ -10,7 +10,9 @@ from sqlalchemy.sql import func
 from app.db.base import Base
 
 if TYPE_CHECKING:
+    from app.models.booking import Booking
     from app.models.owner import Owner
+    from app.models.rate_rule import RateRule
 
 
 class Apartment(Base):
@@ -43,3 +45,5 @@ class Apartment(Base):
     )
 
     owner: Mapped["Owner"] = relationship(back_populates="apartments")
+    bookings: Mapped[list["Booking"]] = relationship(back_populates="apartment")
+    rate_rules: Mapped[list["RateRule"]] = relationship(back_populates="apartment")

@@ -7,7 +7,10 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.apartments import router as apartments_router
+from app.api.auth import router as auth_router
+from app.api.bookings import router as bookings_router
 from app.api.owners import router as owners_router
+from app.api.rate_rules import router as rate_rules_router
 from app.core.config import get_settings
 from app.core.exceptions import register_exception_handlers
 from app.db.session import get_db
@@ -28,6 +31,9 @@ app.add_middleware(
 
 app.include_router(owners_router)
 app.include_router(apartments_router)
+app.include_router(bookings_router)
+app.include_router(rate_rules_router)
+app.include_router(auth_router)
 
 register_exception_handlers(app)
 

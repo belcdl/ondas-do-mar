@@ -9,7 +9,7 @@ from app.db.base import Base
 # Import model modules here so they register on Base.metadata before
 # autogenerate runs, e.g.:
 # from app.models import booking, apartment, user  # noqa: F401
-from app.models import apartment, owner  # noqa: F401
+from app.models import apartment, booking, owner, owner_invitation, rate_rule, user  # noqa: F401
 
 config = context.config
 settings = get_settings()

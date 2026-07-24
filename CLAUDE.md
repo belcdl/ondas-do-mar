@@ -12,7 +12,10 @@ exist until they're actually added.
 
 ## Stack
 
-- Frontend: Vue 3 + Vite + TypeScript, no router/state library yet.
+- Frontend: Vue 3 + Nuxt (SSR/SSG) + TypeScript. Nuxt's built-in file-based
+  router is used instead of a standalone router library. `@nuxtjs/i18n` for
+  ES/EN. Chosen over plain Vite+Vue for SEO (direct-booking discoverability)
+  and because SSR was already a hard requirement — see `docs/architecture.md`.
 - Backend: FastAPI, SQLAlchemy 2 (async), Alembic, `pydantic-settings`.
 - DB: PostgreSQL 16 via the `pgvector/pgvector:pg16` image (extension
   pre-enabled for the future RAG integration — see `docker/postgres/init.sql`).
@@ -40,7 +43,7 @@ backend/app/
                 domain-specific exceptions instead of leaking SQLAlchemy errors
 backend/alembic/    migration environment; env.py reads DATABASE_URL from Settings
 backend/tests/      pytest tests
-frontend/src/       Vue app source
+frontend/           Nuxt app (pages/, components/, composables/, locales/)
 docker/             cross-cutting Docker assets not owned by one service
 docs/               architecture/decision notes
 ```
@@ -58,8 +61,11 @@ docs/               architecture/decision notes
   database schema or use `Base.metadata.create_all()` outside of tests.
   New model modules must be imported in `backend/alembic/env.py` (see the
   comment there) so autogenerate detects them.
-- **Frontend**: Composition API with `<script setup lang="ts">`. Path alias
-  `@/` maps to `frontend/src/`.
+- **Frontend**: Composition API with `<script setup lang="ts">`. Routing is
+  file-based via Nuxt's `pages/` directory — don't add `vue-router` directly.
+  Path alias `@/` maps to `frontend/`. API calls go through a single
+  composable wrapping `$fetch`/`useFetch`, not ad-hoc `fetch` calls per
+  component.
 - **Environment files**: `.env.example` is the committed template; `.env` is
   local-only (gitignored) and must never contain real secrets, even in this
   early stage. Add new variables to *both* files when introduced.

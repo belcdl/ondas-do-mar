@@ -5,14 +5,25 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories.apartment import ApartmentRepository
 from app.repositories.owner import OwnerRepository
+from app.repositories.owner_invitation import OwnerInvitationRepository
+from app.repositories.user import UserRepository
 from app.schemas.apartment import ApartmentCreate, ApartmentUpdate
 from app.schemas.owner import OwnerCreate
-from app.services.apartment import ApartmentNotFoundError, ApartmentService, InactiveOwnerError
+from app.services.apartment import ApartmentNotFoundError, ApartmentService
 from app.services.owner import OwnerNotFoundError, OwnerService
+from app.services.owner_guard import InactiveOwnerError
+
+
+def _owner_service(db_session: AsyncSession) -> OwnerService:
+    return OwnerService(
+        OwnerRepository(db_session),
+        OwnerInvitationRepository(db_session),
+        UserRepository(db_session),
+    )
 
 
 async def _make_owner(db_session: AsyncSession, **overrides: str | None) -> object:
-    service = OwnerService(OwnerRepository(db_session))
+    service = _owner_service(db_session)
     payload = {
         "full_name": "Test Owner",
         "email": f"owner-{uuid.uuid4()}@example.com",
@@ -78,7 +89,7 @@ async def test_create_apartment_with_nonexistent_owner(db_session: AsyncSession)
 
 async def test_create_apartment_with_inactive_owner(db_session: AsyncSession) -> None:
     owner = await _make_owner(db_session)
-    owner_service = OwnerService(OwnerRepository(db_session))
+    owner_service = _owner_service(db_session)
     await owner_service.deactivate_owner(owner.id)
 
     service = _apartment_service(db_session)
@@ -116,7 +127,7 @@ async def test_update_apartment_owner_reassignment(db_session: AsyncSession) -> 
 async def test_update_apartment_reassign_to_inactive_owner(db_session: AsyncSession) -> None:
     owner_a = await _make_owner(db_session)
     owner_b = await _make_owner(db_session)
-    owner_service = OwnerService(OwnerRepository(db_session))
+    owner_service = _owner_service(db_session)
     await owner_service.deactivate_owner(owner_b.id)
 
     service = _apartment_service(db_session)

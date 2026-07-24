@@ -2,7 +2,7 @@ import uuid
 from collections.abc import Sequence
 
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import DataError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.apartment import Apartment
@@ -18,7 +18,7 @@ class ApartmentRepository:
         self.db.add(apartment)
         try:
             await self.db.commit()
-        except IntegrityError:
+        except (IntegrityError, DataError):
             await self.db.rollback()
             raise
         await self.db.refresh(apartment)
@@ -46,7 +46,7 @@ class ApartmentRepository:
     async def update(self, apartment: Apartment) -> Apartment:
         try:
             await self.db.commit()
-        except IntegrityError:
+        except (IntegrityError, DataError):
             await self.db.rollback()
             raise
         await self.db.refresh(apartment)

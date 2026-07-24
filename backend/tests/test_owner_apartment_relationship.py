@@ -8,6 +8,8 @@ from app.models.apartment import Apartment
 from app.models.owner import Owner
 from app.repositories.apartment import ApartmentRepository
 from app.repositories.owner import OwnerRepository
+from app.repositories.owner_invitation import OwnerInvitationRepository
+from app.repositories.user import UserRepository
 from app.schemas.apartment import ApartmentCreate
 from app.schemas.owner import OwnerCreate
 from app.services.apartment import ApartmentService
@@ -15,7 +17,11 @@ from app.services.owner import OwnerService
 
 
 async def test_owner_can_have_multiple_apartments(db_session: AsyncSession) -> None:
-    owner_service = OwnerService(OwnerRepository(db_session))
+    owner_service = OwnerService(
+        OwnerRepository(db_session),
+        OwnerInvitationRepository(db_session),
+        UserRepository(db_session),
+    )
     apartment_service = ApartmentService(
         ApartmentRepository(db_session), OwnerRepository(db_session)
     )

@@ -66,6 +66,84 @@ in [`CLAUDE.md`](../CLAUDE.md).
   intentional, not an oversight: the HTTP status is coarse-grained on
   purpose, the Python exception type is what gives calling code (and future
   API consumers reading `detail`) the precise reason.
+- **`GET /owners/{id}/apartments`**: lives on the owners router (`app/api/owners.py`),
+  not the apartments router, since the URL is nested under the owner
+  resource. The handler composes both `OwnerService` (to 404 on a
+  nonexistent owner) and `ApartmentService` (to list, reusing
+  `list_apartments_by_owner`, unchanged since Sprint 4) — this is the API
+  layer orchestrating two services for one read, not a Service depending on
+  another Service.
+- **Booking (Sprint 5.2)**: belongs to exactly one Apartment (`apartment_id`,
+  `ON DELETE RESTRICT`). `owner_id` is copied from the apartment's current
+  owner once, at creation, and is never updated afterwards — a deliberate
+  historical snapshot, not a live relationship (Decision 022). `status` is a
+  4-state machine (`pending`/`confirmed`/`cancelled`/`completed`) stored as
+  `VARCHAR` + `CHECK` constraint (`native_enum=False, create_constraint=True`)
+  rather than a native Postgres `ENUM`, specifically so adding a 5th state
+  later is a normal migration, not an `ALTER TYPE`. Status changes only
+  happen through `POST /bookings/{id}/{confirm,cancel,complete}`, never
+  through the generic `PATCH` (Decision 023).
+- **Double-booking protection (Sprint 5.3)**: enforced entirely by Postgres,
+  not application code — a partial `EXCLUDE USING gist` constraint on
+  `bookings` (`apartment_id WITH =`, `daterange(check_in_date, check_out_date,
+  '[)') WITH &&`, `WHERE status = 'confirmed'`), backed by the `btree_gist`
+  extension. An `EXCLUDE` constraint is checked as part of the write itself
+  (like `UNIQUE`, via an index), so there is no time-of-check-to-time-of-use
+  gap the way there would be with a "search overlapping bookings, then
+  insert" check in the service — that pattern was deliberately rejected for
+  exactly the reason it caused the Owner email race in Sprint 3.6. Verified
+  under real concurrency: 5 simultaneous `POST /bookings/{id}/confirm` calls
+  for overlapping dates produced exactly one `200` and four `409`s, never a
+  `500`. Because a booking is only ever inserted as `pending`, the
+  constraint can't fire at creation — it fires at `confirm_booking`, which is
+  why that method (not just `create_booking`/`update_booking`) now also
+  catches `IntegrityError` and translates it to `ConflictError` (Decision 027).
+  `alembic --autogenerate` does not detect `ExcludeConstraint` changes (confirmed
+  empirically), so its migration is hand-written; the constraint is still
+  declared on the `Booking` model for documentation accuracy.
+- **`confirmation_code` as the public booking identifier**: guests have no
+  account and no other practical way to self-identify a booking, so
+  `GET /bookings/by-confirmation/{code}` exists alongside `GET /bookings/{id}`
+  as a separate, guest-facing lookup path (Decision 028). The two identifiers
+  serve different audiences — `id` for the internal/owner-facing routes,
+  `confirmation_code` for anyone without platform access.
+- **Booking list filters live in `BookingRepository.list_all`** as composable
+  optional `WHERE` clauses (`apartment_id`, `owner_id`, `status`,
+  `check_in_from`, `check_in_to`, `guest_email`), not as separate methods —
+  continuing the direction set for Apartment listing in Decision 024
+  (Decision 029).
+- **Authentication (Sprint 6.1)**: `User` is a standalone entity (JWT
+  identity, `admin`/`owner` role), separate from `Owner` (the business
+  entity). Linked via `owner.user_id` (nullable, unique) — no `relationship()`
+  between them, deliberately (Decision 033). JWT access tokens (`core/security.py`,
+  PyJWT + passlib/bcrypt), validated by `get_current_user` →
+  `get_current_active_user` → `require_admin`/`require_owner`, a layered
+  dependency chain in `app/api/deps.py` reused by any router. Two new
+  exception branches (`AuthenticationError` 401, `PermissionDeniedError` 403)
+  slot into the existing centralized handler with zero changes to
+  `main.py` (Decision 036) — the same payoff Decision 018 was designed for.
+  Every login/token failure mode returns an identical generic message
+  within its category, closing the email-enumeration pattern QA-1 found on
+  Owner creation (Decision 035). No endpoint yet creates or links Users —
+  `POST /auth/login`, `POST /auth/logout`, and `GET /auth/me` are the only
+  auth surface this sprint; user management and applying `require_admin`/
+  `require_owner` to the existing Owner/Apartment/Booking routers are
+  follow-up work.
+- **Ownership authorization (Sprint 6.2)**: every Owner/Apartment/Booking
+  endpoint except `POST /bookings` and `GET /bookings/by-confirmation/{code}`
+  (which stay public — guests have no accounts, Decision 040) now requires
+  authentication and enforces "an owner only touches their own resources,
+  an admin touches anything." Centralized as one comparison helper
+  (`authorize_owner_match`) plus fetch-then-authorize dependencies
+  (`get_authorized_owner`/`get_authorized_apartment`/`get_authorized_booking`)
+  in `app/api/deps.py` (Decision 041) — no per-router duplication, and 404
+  is structurally impossible to use for hiding a resource that exists but
+  isn't the caller's, since the dependency always fetches (real 404 first)
+  before comparing ownership (403 second) (Decision 042). List endpoints
+  (`GET /apartments`, `GET /bookings`) filter rather than allow/deny,
+  reusing the already-existing scoped service methods. `owner.user_id`
+  linking still has no public endpoint (Decision 039) — tests link directly
+  at the ORM level, same as `test_owner_apartment_relationship.py`.
 
 ## Planned integrations (not yet implemented)
 

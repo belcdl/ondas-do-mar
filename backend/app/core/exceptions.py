@@ -22,11 +22,21 @@ class BusinessRuleError(ApplicationError):
     """The request is well-formed but violates a business rule."""
 
 
+class AuthenticationError(ApplicationError):
+    """The request lacks valid authentication credentials."""
+
+
+class PermissionDeniedError(ApplicationError):
+    """The request is authenticated but not authorized to perform this action."""
+
+
 _STATUS_CODES: dict[type[ApplicationError], int] = {
     NotFoundError: 404,
     ConflictError: 409,
     ValidationError: 422,
     BusinessRuleError: 422,
+    AuthenticationError: 401,
+    PermissionDeniedError: 403,
 }
 
 
