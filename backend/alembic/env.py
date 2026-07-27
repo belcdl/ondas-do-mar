@@ -15,6 +15,7 @@ from app.models import (  # noqa: F401
     booking,
     owner,
     owner_invitation,
+    payment,
     rate_rule,
     user,
 )

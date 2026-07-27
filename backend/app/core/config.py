@@ -12,6 +12,7 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql+psycopg://ondas:ondas_dev_password@localhost:5432/ondas_do_mar"
     backend_cors_origins: list[str] = ["http://localhost:5173"]
+    frontend_base_url: str = "http://localhost:5173"
 
     secret_key: str = "change-me-in-production"
     algorithm: str = "HS256"

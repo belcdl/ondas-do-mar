@@ -86,9 +86,17 @@ docs/               architecture/decision notes
   (`docker/postgres/init.sql`). When adding vector columns, use SQLAlchemy
   models with the `pgvector.sqlalchemy` `Vector` type and a normal Alembic
   migration — no infra changes needed.
-- Don't add dependencies, abstractions, or scaffolding beyond what a task
-  actually needs — this repo intentionally stayed minimal at the
-  infrastructure stage; keep that bar as features land.
+- **Prefer well-maintained generic libraries over custom-built solutions**
+  when one genuinely covers the need — don't hand-roll what a solid package
+  already solves (payment UI, calendar/date-range pickers, component
+  libraries). Decided so far: Stripe Checkout (hosted page, not a
+  custom card form) for payments; Nuxt UI for the owner panel's components
+  (tables, forms, buttons) and its Calendar component for date ranges —
+  fall back to a more specialized library (e.g. `v-calendar`) only if Nuxt
+  UI's calendar proves too limited for booking-specific needs (marking
+  occupied days, per-day pricing). This doesn't mean adding dependencies
+  speculatively — still don't add a library for something not yet being
+  built, just don't reimplement something a package already does well.
 
 ## Running locally
 

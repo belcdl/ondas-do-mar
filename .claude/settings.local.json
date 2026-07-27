@@ -33,7 +33,17 @@
       "Bash(node verify.mjs)",
       "Bash(node verify2.mjs)",
       "Bash(node debug.mjs)",
-      "Bash(echo \"TYPECHECK_EXIT=$?\")"
+      "Bash(echo \"TYPECHECK_EXIT=$?\")",
+      "Bash(curl -s \"http://localhost:8000/availability/search?check_in=2027-08-10&check_out=2027-08-15&guests=2\")",
+      "Bash(curl *)",
+      "Bash(xargs -I{} sh -c 'echo \"== {} ==\"; grep -E \"^revision|^down_revision\" {}')",
+      "Bash(tasklist)",
+      "Bash(where docker *)",
+      "Bash(start \"\" \"C:\\\\Program Files\\\\Docker\\\\Docker\\\\Docker Desktop.exe\")",
+      "Bash(docker info *)",
+      "Bash(uv run *)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('\\\\n'.join\\(sorted\\(d['paths'].keys\\(\\)\\)\\)\\)\")",
+      "Bash(python3 -m json.tool)"
     ]
   }
 }

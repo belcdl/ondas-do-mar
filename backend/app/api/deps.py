@@ -16,12 +16,14 @@ from app.repositories.blocked_date import BlockedDateRepository
 from app.repositories.booking import BookingRepository
 from app.repositories.owner import OwnerRepository
 from app.repositories.owner_invitation import OwnerInvitationRepository
+from app.repositories.payment import PaymentRepository
 from app.repositories.rate_rule import RateRuleRepository
 from app.repositories.user import UserRepository
 from app.services.apartment import ApartmentService
 from app.services.availability import AvailabilityService
 from app.services.booking import BookingService
 from app.services.owner import OwnerService
+from app.services.payment import PaymentService
 from app.services.rate_rule import RateRuleService
 from app.services.user import AuthenticationError, UserService
 
@@ -98,6 +100,18 @@ def get_booking_service(
     rate_rule_service: RateRuleService = Depends(get_rate_rule_service),
 ) -> BookingService:
     return BookingService(repository, apartment_repository, owner_repository, rate_rule_service)
+
+
+def get_payment_repository(db: AsyncSession = Depends(get_db)) -> PaymentRepository:
+    return PaymentRepository(db)
+
+
+def get_payment_service(
+    repository: PaymentRepository = Depends(get_payment_repository),
+    apartment_repository: ApartmentRepository = Depends(get_apartment_repository),
+    booking_service: BookingService = Depends(get_booking_service),
+) -> PaymentService:
+    return PaymentService(repository, apartment_repository, booking_service)
 
 
 def get_user_service(repository: UserRepository = Depends(get_user_repository)) -> UserService:
