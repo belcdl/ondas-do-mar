@@ -1,6 +1,6 @@
 import secrets
 import uuid
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timezone
 from decimal import Decimal
 
 from sqlalchemy.exc import DataError, IntegrityError
@@ -11,10 +11,10 @@ from app.models.booking import Booking, BookingStatus
 from app.repositories.apartment import ApartmentRepository
 from app.repositories.booking import BookingRepository
 from app.repositories.owner import OwnerRepository
-from app.repositories.rate_rule import RateRuleRepository
 from app.schemas.booking import BookingCreate, BookingUpdate
 from app.services.apartment import ApartmentNotFoundError
 from app.services.owner_guard import ensure_owner_is_active
+from app.services.rate_rule import RateRuleService
 
 
 class BookingNotFoundError(NotFoundError):
@@ -23,14 +23,6 @@ class BookingNotFoundError(NotFoundError):
 
 class InvalidBookingDatesError(ValidationError):
     """Raised when check_out_date is not after check_in_date."""
-
-
-class NoApplicableRateError(ValidationError):
-    """Raised when at least one night of the requested stay has no covering rate rule."""
-
-
-class MinimumStayNotMetError(BusinessRuleError):
-    """Raised when the stay is shorter than the covering rate rule's min_stay."""
 
 
 class InvalidBookingStatusTransitionError(BusinessRuleError):
@@ -66,12 +58,12 @@ class BookingService:
         repository: BookingRepository,
         apartment_repository: ApartmentRepository,
         owner_repository: OwnerRepository,
-        rate_rule_repository: RateRuleRepository,
+        rate_rule_service: RateRuleService,
     ) -> None:
         self.repository = repository
         self.apartment_repository = apartment_repository
         self.owner_repository = owner_repository
-        self.rate_rule_repository = rate_rule_repository
+        self.rate_rule_service = rate_rule_service
 
     async def _get_bookable_apartment(self, apartment_id: uuid.UUID) -> Apartment:
         apartment = await self.apartment_repository.get_by_id(apartment_id)
@@ -90,38 +82,10 @@ class BookingService:
     async def _compute_total_price(
         self, apartment_id: uuid.UUID, check_in_date: date, check_out_date: date
     ) -> Decimal:
-        """Price every stayed night from its own covering rate rule (a stay
-        spanning two rules with different prices charges each night at its
-        own rule's price) and enforce the min_stay of the rule covering the
-        first night. check_out_date itself is never priced — it's a
-        checkout day, not a stayed night."""
-        last_night = check_out_date - timedelta(days=1)
-        rate_rules = await self.rate_rule_repository.list_covering_range(
-            apartment_id, check_in_date, last_night
+        nightly_prices = await self.rate_rule_service.price_stay(
+            apartment_id, check_in_date, check_out_date
         )
-
-        total_price = Decimal("0.00")
-        night = check_in_date
-        while night <= last_night:
-            rule = next((r for r in rate_rules if r.start_date <= night <= r.end_date), None)
-            if rule is None:
-                raise NoApplicableRateError(
-                    f"No rate rule covers {night.isoformat()} for this apartment"
-                )
-            total_price += rule.price_per_night
-            night += timedelta(days=1)
-
-        check_in_rule = next(
-            r for r in rate_rules if r.start_date <= check_in_date <= r.end_date
-        )
-        stay_nights = (check_out_date - check_in_date).days
-        if stay_nights < check_in_rule.min_stay:
-            raise MinimumStayNotMetError(
-                f"This apartment requires a minimum stay of {check_in_rule.min_stay} night(s), "
-                f"but the requested stay is {stay_nights} night(s)"
-            )
-
-        return total_price
+        return sum((night.price for night in nightly_prices), Decimal("0.00"))
 
     async def create_booking(self, data: BookingCreate) -> Booking:
         self._validate_dates(data.check_in_date, data.check_out_date)

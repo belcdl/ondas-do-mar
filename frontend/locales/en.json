@@ -10,5 +10,21 @@
     "greeting": "Hello, {name}",
     "logout": "Log out",
     "placeholder": "Apartment, rate, and booking management will be available in a future iteration."
+  },
+  "availability": {
+    "title": "Search availability",
+    "checkIn": "Check-in date",
+    "checkOut": "Check-out date",
+    "guests": "Guests",
+    "search": "Search",
+    "table": {
+      "apartment": "Apartment",
+      "nights": "Nights",
+      "priceTotal": "Total price",
+      "available": "Available"
+    },
+    "yes": "Yes",
+    "noResults": "No apartments available for those dates.",
+    "error": "Search failed. Please try again."
   }
 }

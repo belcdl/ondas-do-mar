@@ -1,9 +1,11 @@
 import uuid
-from datetime import date
+from dataclasses import dataclass
+from datetime import date, timedelta
+from decimal import Decimal
 
 from sqlalchemy.exc import DataError, IntegrityError
 
-from app.core.exceptions import ConflictError, NotFoundError, ValidationError
+from app.core.exceptions import BusinessRuleError, ConflictError, NotFoundError, ValidationError
 from app.models.rate_rule import RateRule
 from app.repositories.booking import BookingRepository
 from app.repositories.rate_rule import RateRuleRepository
@@ -26,6 +28,20 @@ class OverlappingRateRuleError(ConflictError):
 
 class RateRuleInUseError(ConflictError):
     """Raised when deleting a rate rule would leave a confirmed booking's stay unpriced."""
+
+
+class NoApplicableRateError(ValidationError):
+    """Raised when at least one night of the requested stay has no covering rate rule."""
+
+
+class MinimumStayNotMetError(BusinessRuleError):
+    """Raised when the stay is shorter than the covering rate rule's min_stay."""
+
+
+@dataclass(frozen=True)
+class NightlyPrice:
+    night: date
+    price: Decimal
 
 
 def _conflict_error_for(exc: IntegrityError, *, default_message: str) -> ConflictError:
@@ -56,6 +72,44 @@ class RateRuleService:
     def _validate_dates(start_date: date, end_date: date) -> None:
         if end_date < start_date:
             raise InvalidRateRuleDatesError("end_date must be on or after start_date")
+
+    async def price_stay(
+        self, apartment_id: uuid.UUID, check_in_date: date, check_out_date: date
+    ) -> list[NightlyPrice]:
+        """Price every stayed night from its own covering rate rule (a stay
+        spanning two rules with different prices charges each night at its
+        own rule's price) and enforce the min_stay of the rule covering the
+        first night. check_out_date itself is never priced — it's a
+        checkout day, not a stayed night. Shared by BookingService (to
+        compute total_price) and AvailabilityService (to build the search
+        response's price breakdown) so the rate-rule rules are defined once."""
+        last_night = check_out_date - timedelta(days=1)
+        rate_rules = await self.repository.list_covering_range(
+            apartment_id, check_in_date, last_night
+        )
+
+        nightly_prices: list[NightlyPrice] = []
+        night = check_in_date
+        while night <= last_night:
+            rule = next((r for r in rate_rules if r.start_date <= night <= r.end_date), None)
+            if rule is None:
+                raise NoApplicableRateError(
+                    f"No rate rule covers {night.isoformat()} for this apartment"
+                )
+            nightly_prices.append(NightlyPrice(night=night, price=rule.price_per_night))
+            night += timedelta(days=1)
+
+        check_in_rule = next(
+            r for r in rate_rules if r.start_date <= check_in_date <= r.end_date
+        )
+        stay_nights = (check_out_date - check_in_date).days
+        if stay_nights < check_in_rule.min_stay:
+            raise MinimumStayNotMetError(
+                f"This apartment requires a minimum stay of {check_in_rule.min_stay} night(s), "
+                f"but the requested stay is {stay_nights} night(s)"
+            )
+
+        return nightly_prices
 
     async def create_rate_rule(self, data: RateRuleCreate) -> RateRule:
         self._validate_dates(data.start_date, data.end_date)

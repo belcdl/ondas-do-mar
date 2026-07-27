@@ -44,7 +44,7 @@ services:
     env_file:
       - .env
     environment:
-      VITE_API_URL: ${VITE_API_URL}
+      NUXT_PUBLIC_API_URL: ${NUXT_PUBLIC_API_URL}
     ports:
       - "${FRONTEND_PORT:-5173}:5173"
     volumes:

@@ -33,6 +33,7 @@ class ApartmentService:
             country=data.country,
             description=data.description,
             bedrooms=data.bedrooms,
+            max_guests=data.max_guests,
         )
         try:
             return await self.repository.create(apartment)

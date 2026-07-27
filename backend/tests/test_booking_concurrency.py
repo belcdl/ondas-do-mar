@@ -43,7 +43,7 @@ async def _confirm(booking_id: uuid.UUID) -> str:
             BookingRepository(session),
             ApartmentRepository(session),
             OwnerRepository(session),
-            RateRuleRepository(session),
+            RateRuleService(RateRuleRepository(session), BookingRepository(session)),
         )
         try:
             await service.confirm_booking(booking_id)
@@ -95,7 +95,7 @@ async def test_exclude_constraint_rejects_concurrent_overlapping_confirmations()
             BookingRepository(setup_session),
             ApartmentRepository(setup_session),
             OwnerRepository(setup_session),
-            RateRuleRepository(setup_session),
+            RateRuleService(RateRuleRepository(setup_session), BookingRepository(setup_session)),
         )
         booking_a = await booking_service.create_booking(
             BookingCreate(

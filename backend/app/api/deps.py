@@ -12,12 +12,14 @@ from app.models.owner import Owner
 from app.models.rate_rule import RateRule
 from app.models.user import User, UserRole
 from app.repositories.apartment import ApartmentRepository
+from app.repositories.blocked_date import BlockedDateRepository
 from app.repositories.booking import BookingRepository
 from app.repositories.owner import OwnerRepository
 from app.repositories.owner_invitation import OwnerInvitationRepository
 from app.repositories.rate_rule import RateRuleRepository
 from app.repositories.user import UserRepository
 from app.services.apartment import ApartmentService
+from app.services.availability import AvailabilityService
 from app.services.booking import BookingService
 from app.services.owner import OwnerService
 from app.services.rate_rule import RateRuleService
@@ -67,20 +69,35 @@ def get_rate_rule_repository(db: AsyncSession = Depends(get_db)) -> RateRuleRepo
     return RateRuleRepository(db)
 
 
-def get_booking_service(
-    repository: BookingRepository = Depends(get_booking_repository),
-    apartment_repository: ApartmentRepository = Depends(get_apartment_repository),
-    owner_repository: OwnerRepository = Depends(get_owner_repository),
-    rate_rule_repository: RateRuleRepository = Depends(get_rate_rule_repository),
-) -> BookingService:
-    return BookingService(repository, apartment_repository, owner_repository, rate_rule_repository)
-
-
 def get_rate_rule_service(
     repository: RateRuleRepository = Depends(get_rate_rule_repository),
     booking_repository: BookingRepository = Depends(get_booking_repository),
 ) -> RateRuleService:
     return RateRuleService(repository, booking_repository)
+
+
+def get_blocked_date_repository(db: AsyncSession = Depends(get_db)) -> BlockedDateRepository:
+    return BlockedDateRepository(db)
+
+
+def get_availability_service(
+    apartment_repository: ApartmentRepository = Depends(get_apartment_repository),
+    booking_repository: BookingRepository = Depends(get_booking_repository),
+    blocked_date_repository: BlockedDateRepository = Depends(get_blocked_date_repository),
+    rate_rule_service: RateRuleService = Depends(get_rate_rule_service),
+) -> AvailabilityService:
+    return AvailabilityService(
+        apartment_repository, booking_repository, blocked_date_repository, rate_rule_service
+    )
+
+
+def get_booking_service(
+    repository: BookingRepository = Depends(get_booking_repository),
+    apartment_repository: ApartmentRepository = Depends(get_apartment_repository),
+    owner_repository: OwnerRepository = Depends(get_owner_repository),
+    rate_rule_service: RateRuleService = Depends(get_rate_rule_service),
+) -> BookingService:
+    return BookingService(repository, apartment_repository, owner_repository, rate_rule_service)
 
 
 def get_user_service(repository: UserRepository = Depends(get_user_repository)) -> UserService:

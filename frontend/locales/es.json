@@ -10,5 +10,21 @@
     "greeting": "Hola, {name}",
     "logout": "Cerrar sesión",
     "placeholder": "La gestión de apartamentos, tarifas y reservas estará disponible en una próxima iteración."
+  },
+  "availability": {
+    "title": "Buscar disponibilidad",
+    "checkIn": "Fecha de entrada",
+    "checkOut": "Fecha de salida",
+    "guests": "Huéspedes",
+    "search": "Buscar",
+    "table": {
+      "apartment": "Apartamento",
+      "nights": "Noches",
+      "priceTotal": "Precio total",
+      "available": "Disponible"
+    },
+    "yes": "Sí",
+    "noResults": "No hay apartamentos disponibles para esas fechas.",
+    "error": "No se pudo completar la búsqueda. Inténtalo de nuevo."
   }
 }

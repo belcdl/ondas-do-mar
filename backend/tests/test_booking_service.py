@@ -23,12 +23,10 @@ from app.services.booking import (
     BookingService,
     InvalidBookingDatesError,
     InvalidBookingStatusTransitionError,
-    MinimumStayNotMetError,
-    NoApplicableRateError,
 )
 from app.services.owner import OwnerService
 from app.services.owner_guard import InactiveOwnerError
-from app.services.rate_rule import RateRuleService
+from app.services.rate_rule import MinimumStayNotMetError, NoApplicableRateError, RateRuleService
 
 
 def _owner_service(db_session: AsyncSession) -> OwnerService:
@@ -63,17 +61,17 @@ async def _make_apartment(db_session: AsyncSession, owner_id: uuid.UUID, **overr
     return await service.create_apartment(ApartmentCreate(**payload))
 
 
+def _rate_rule_service(db_session: AsyncSession) -> RateRuleService:
+    return RateRuleService(RateRuleRepository(db_session), BookingRepository(db_session))
+
+
 def _booking_service(db_session: AsyncSession) -> BookingService:
     return BookingService(
         BookingRepository(db_session),
         ApartmentRepository(db_session),
         OwnerRepository(db_session),
-        RateRuleRepository(db_session),
+        _rate_rule_service(db_session),
     )
-
-
-def _rate_rule_service(db_session: AsyncSession) -> RateRuleService:
-    return RateRuleService(RateRuleRepository(db_session), BookingRepository(db_session))
 
 
 async def _make_rate_rule(db_session: AsyncSession, apartment_id: uuid.UUID, **overrides: object):

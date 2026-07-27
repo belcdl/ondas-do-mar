@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ApartmentBase(BaseModel):
@@ -13,6 +13,7 @@ class ApartmentBase(BaseModel):
     country: str
     description: str | None = None
     bedrooms: int | None = None
+    max_guests: int = Field(default=4, gt=0)
 
 
 class ApartmentCreate(ApartmentBase):
@@ -28,6 +29,7 @@ class ApartmentUpdate(BaseModel):
     country: str | None = None
     description: str | None = None
     bedrooms: int | None = None
+    max_guests: int | None = Field(default=None, gt=0)
     is_active: bool | None = None
 
 

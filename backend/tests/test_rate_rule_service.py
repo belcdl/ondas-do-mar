@@ -68,7 +68,7 @@ def _booking_service(db_session: AsyncSession) -> BookingService:
         BookingRepository(db_session),
         ApartmentRepository(db_session),
         OwnerRepository(db_session),
-        RateRuleRepository(db_session),
+        _rate_rule_service(db_session),
     )
 
 

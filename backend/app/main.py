@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.apartments import router as apartments_router
 from app.api.auth import router as auth_router
+from app.api.availability import router as availability_router
 from app.api.bookings import router as bookings_router
 from app.api.owners import router as owners_router
 from app.api.rate_rules import router as rate_rules_router
@@ -33,6 +34,7 @@ app.include_router(owners_router)
 app.include_router(apartments_router)
 app.include_router(bookings_router)
 app.include_router(rate_rules_router)
+app.include_router(availability_router)
 app.include_router(auth_router)
 
 register_exception_handlers(app)
