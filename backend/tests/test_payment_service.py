@@ -149,6 +149,13 @@ def _completed_event(checkout_session_id: str, payment_intent_id: str) -> dict:
     }
 
 
+def _expired_event(checkout_session_id: str) -> dict:
+    return {
+        "type": "checkout.session.expired",
+        "data": {"object": {"id": checkout_session_id}},
+    }
+
+
 async def test_create_checkout_session_creates_pending_payment(
     db_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -304,3 +311,76 @@ async def test_webhook_ignores_unhandled_event_types(
     unchanged_booking = await _booking_service(db_session).get_booking(booking.id)
     assert unchanged_booking.status == BookingStatus.PENDING
     assert await PaymentRepository(db_session).get_by_booking_id(booking.id) is None
+
+
+async def test_webhook_checkout_expired_marks_payment_failed(
+    db_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    owner = await _make_owner(db_session)
+    apartment = await _make_apartment(db_session, owner.id)
+    await _make_rate_rule(db_session, apartment.id)
+    booking = await _booking_service(db_session).create_booking(_booking_payload(apartment.id))
+
+    fake = _patch_stripe_checkout(monkeypatch)
+    service = _payment_service(db_session)
+    await service.create_checkout_session(booking.id)
+
+    _patch_construct_event(monkeypatch, _expired_event("cs_test_1"))
+    await service.handle_webhook_event(b"{}", "sig_header")
+
+    payment = await PaymentRepository(db_session).get_by_booking_id(booking.id)
+    assert payment is not None
+    assert payment.status == PaymentStatus.FAILED
+
+    unchanged_booking = await _booking_service(db_session).get_booking(booking.id)
+    assert unchanged_booking.status == BookingStatus.PENDING
+
+    # The retry path (create_checkout_session's existing branch for any
+    # non-SUCCEEDED payment) must still work after the failure.
+    retry_url = await service.create_checkout_session(booking.id)
+
+    assert len(fake.calls) == 2
+    assert retry_url == "https://checkout.stripe.com/c/pay/cs_test_2"
+    retried_payment = await PaymentRepository(db_session).get_by_booking_id(booking.id)
+    assert retried_payment is not None
+    assert retried_payment.status == PaymentStatus.PENDING
+    assert retried_payment.stripe_checkout_session_id == "cs_test_2"
+
+
+async def test_webhook_expired_after_completed_is_noop(
+    db_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Webhook delivery order isn't guaranteed — an expired event arriving
+    after a completed one for the same session must not downgrade a
+    SUCCEEDED payment (or un-confirm the booking)."""
+    owner = await _make_owner(db_session)
+    apartment = await _make_apartment(db_session, owner.id)
+    await _make_rate_rule(db_session, apartment.id)
+    booking = await _booking_service(db_session).create_booking(_booking_payload(apartment.id))
+
+    _patch_stripe_checkout(monkeypatch)
+    service = _payment_service(db_session)
+    await service.create_checkout_session(booking.id)
+
+    _patch_construct_event(monkeypatch, _completed_event("cs_test_1", "pi_test_123"))
+    await service.handle_webhook_event(b"{}", "sig_header")
+
+    _patch_construct_event(monkeypatch, _expired_event("cs_test_1"))
+    await service.handle_webhook_event(b"{}", "sig_header")
+
+    payment = await PaymentRepository(db_session).get_by_booking_id(booking.id)
+    assert payment is not None
+    assert payment.status == PaymentStatus.SUCCEEDED
+    assert payment.stripe_payment_intent_id == "pi_test_123"
+
+    booking_after = await _booking_service(db_session).get_booking(booking.id)
+    assert booking_after.status == BookingStatus.CONFIRMED
+
+
+async def test_webhook_expired_for_unknown_session_does_not_raise(
+    db_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _patch_construct_event(monkeypatch, _expired_event("cs_test_does_not_exist"))
+    service = _payment_service(db_session)
+
+    await service.handle_webhook_event(b"{}", "sig_header")

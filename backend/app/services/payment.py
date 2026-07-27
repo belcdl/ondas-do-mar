@@ -110,7 +110,8 @@ class PaymentService:
         except stripe.error.SignatureVerificationError as exc:
             raise InvalidWebhookSignatureError("Invalid Stripe webhook signature") from exc
 
-        if event["type"] != "checkout.session.completed":
+        event_type = event["type"]
+        if event_type not in ("checkout.session.completed", "checkout.session.expired"):
             return
 
         session = event["data"]["object"]
@@ -118,16 +119,24 @@ class PaymentService:
 
         payment = await self.repository.get_by_checkout_session_id(checkout_session_id)
         if payment is None:
-            logger.warning(
-                "Received checkout.session.completed for unknown session %s", checkout_session_id
-            )
+            logger.warning("Received %s for unknown session %s", event_type, checkout_session_id)
             return
 
-        if payment.status == PaymentStatus.SUCCEEDED:
-            return
-
-        payment.status = PaymentStatus.SUCCEEDED
-        payment.stripe_payment_intent_id = session["payment_intent"]
-        await self.repository.update(payment)
-
-        await self.booking_service.confirm_booking(payment.booking_id)
+        if event_type == "checkout.session.completed":
+            if payment.status == PaymentStatus.SUCCEEDED:
+                return
+            payment.status = PaymentStatus.SUCCEEDED
+            payment.stripe_payment_intent_id = session["payment_intent"]
+            await self.repository.update(payment)
+            await self.booking_service.confirm_booking(payment.booking_id)
+        else:
+            # checkout.session.expired: only PENDING -> FAILED. Webhook
+            # delivery order isn't guaranteed, so an expired event arriving
+            # after a completed one must not downgrade a SUCCEEDED payment
+            # (or double-fail an already-FAILED one) — the booking itself is
+            # left untouched either way, since create_checkout_session
+            # already allows retrying a PENDING or FAILED payment.
+            if payment.status != PaymentStatus.PENDING:
+                return
+            payment.status = PaymentStatus.FAILED
+            await self.repository.update(payment)

@@ -175,3 +175,29 @@ async def test_stripe_webhook_unhandled_event_type_returns_200(
         "/webhooks/stripe", content=b"{}", headers={"stripe-signature": "sig"}
     )
     assert response.status_code == 200
+
+
+async def test_stripe_webhook_expired_event_returns_200_and_leaves_booking_pending(
+    client: AsyncClient, admin_headers: dict[str, str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    owner = await _create_owner(client, admin_headers)
+    apartment = await _create_apartment(client, admin_headers, owner["id"])
+    booking = await _create_booking(client, apartment["id"])
+
+    _patch_stripe_checkout(monkeypatch)
+    checkout_response = await client.post(f"/bookings/{booking['id']}/checkout-session")
+    assert checkout_response.status_code == 200
+
+    event = {
+        "type": "checkout.session.expired",
+        "data": {"object": {"id": "cs_test_api"}},
+    }
+    _patch_construct_event(monkeypatch, event)
+
+    webhook_response = await client.post(
+        "/webhooks/stripe", content=b"{}", headers={"stripe-signature": "sig"}
+    )
+    assert webhook_response.status_code == 200
+
+    booking_response = await client.get(f"/bookings/{booking['id']}", headers=admin_headers)
+    assert booking_response.json()["status"] == BookingStatus.PENDING.value
