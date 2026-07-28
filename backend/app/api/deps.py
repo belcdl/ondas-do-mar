@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.exceptions import PermissionDeniedError
 from app.db.session import get_db
 from app.models.apartment import Apartment
+from app.models.blocked_date import BlockedDate
 from app.models.booking import Booking
 from app.models.owner import Owner
 from app.models.rate_rule import RateRule
@@ -21,6 +22,7 @@ from app.repositories.rate_rule import RateRuleRepository
 from app.repositories.user import UserRepository
 from app.services.apartment import ApartmentService
 from app.services.availability import AvailabilityService
+from app.services.blocked_date import BlockedDateService
 from app.services.booking import BookingService
 from app.services.owner import OwnerService
 from app.services.payment import PaymentService
@@ -80,6 +82,12 @@ def get_rate_rule_service(
 
 def get_blocked_date_repository(db: AsyncSession = Depends(get_db)) -> BlockedDateRepository:
     return BlockedDateRepository(db)
+
+
+def get_blocked_date_service(
+    repository: BlockedDateRepository = Depends(get_blocked_date_repository),
+) -> BlockedDateService:
+    return BlockedDateService(repository)
 
 
 def get_availability_service(
@@ -225,3 +233,19 @@ async def get_authorized_rate_rule(
     apartment = await apartment_service.get_apartment(rate_rule.apartment_id)
     authorize_owner_match(current_user, caller_owner, apartment.owner_id)
     return rate_rule
+
+
+async def get_authorized_blocked_date(
+    blocked_date_id: uuid.UUID,
+    current_user: User = Depends(get_current_active_user),
+    caller_owner: Owner | None = Depends(get_current_owner_or_none),
+    service: BlockedDateService = Depends(get_blocked_date_service),
+    apartment_service: ApartmentService = Depends(get_apartment_service),
+) -> BlockedDate:
+    """Fetch-then-authorize for /blocked-dates/{blocked_date_id} routes. A
+    blocked date has no owner_id of its own, so authorization is checked
+    against its parent apartment's owner, same rule as rate rules."""
+    blocked_date = await service.get_blocked_date(blocked_date_id)
+    apartment = await apartment_service.get_apartment(blocked_date.apartment_id)
+    authorize_owner_match(current_user, caller_owner, apartment.owner_id)
+    return blocked_date

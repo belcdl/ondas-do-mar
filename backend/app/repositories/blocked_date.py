@@ -40,3 +40,28 @@ class BlockedDateRepository:
         )
         result = await self.db.execute(stmt)
         return result.scalars().all()
+
+    async def get_by_id(self, blocked_date_id: uuid.UUID) -> BlockedDate | None:
+        return await self.db.get(BlockedDate, blocked_date_id)
+
+    async def list_by_apartment(self, apartment_id: uuid.UUID) -> Sequence[BlockedDate]:
+        stmt = (
+            select(BlockedDate)
+            .where(BlockedDate.apartment_id == apartment_id)
+            .order_by(BlockedDate.start_date)
+        )
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
+
+    async def update(self, blocked_date: BlockedDate) -> BlockedDate:
+        try:
+            await self.db.commit()
+        except (IntegrityError, DataError):
+            await self.db.rollback()
+            raise
+        await self.db.refresh(blocked_date)
+        return blocked_date
+
+    async def delete(self, blocked_date: BlockedDate) -> None:
+        await self.db.delete(blocked_date)
+        await self.db.commit()
