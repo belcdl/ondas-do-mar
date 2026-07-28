@@ -11,7 +11,7 @@ async def _create_owner(client: AsyncClient, headers: dict[str, str], **override
         "phone": "+34600000000",
     }
     payload.update(overrides)
-    response = await client.post("/owners", json=payload, headers=headers)
+    response = await client.post("/api/v1/owners", json=payload, headers=headers)
     assert response.status_code == 201
     return response.json()
 
@@ -27,7 +27,7 @@ async def _create_apartment(
         "country": "Portugal",
     }
     payload.update(overrides)
-    response = await client.post("/apartments", json=payload, headers=headers)
+    response = await client.post("/api/v1/apartments", json=payload, headers=headers)
     assert response.status_code == 201
     return response.json()
 
@@ -43,7 +43,7 @@ async def _create_rate_rule(
     }
     payload.update(overrides)
     response = await client.post(
-        f"/apartments/{apartment_id}/rate-rules", json=payload, headers=headers
+        f"/api/v1/apartments/{apartment_id}/rate-rules", json=payload, headers=headers
     )
     assert response.status_code == 201
     return response.json()
@@ -59,7 +59,7 @@ async def test_search_returns_available_apartment_with_price_breakdown(
     check_in = date.today() + timedelta(days=10)
     check_out = check_in + timedelta(days=3)
     response = await client.get(
-        "/availability/search",
+        "/api/v1/availability/search",
         params={"check_in": str(check_in), "check_out": str(check_out), "guests": 2},
     )
     assert response.status_code == 200
@@ -86,7 +86,7 @@ async def test_search_returns_empty_list_when_nothing_is_available(
     check_in = date.today() + timedelta(days=10)
     check_out = check_in + timedelta(days=3)
     response = await client.get(
-        "/availability/search",
+        "/api/v1/availability/search",
         params={"check_in": str(check_in), "check_out": str(check_out), "guests": 2},
     )
     assert response.status_code == 200
@@ -102,7 +102,7 @@ async def test_search_excludes_apartment_with_insufficient_capacity(
 
     check_in = date.today() + timedelta(days=15)
     response = await client.get(
-        "/availability/search",
+        "/api/v1/availability/search",
         params={
             "check_in": str(check_in),
             "check_out": str(check_in + timedelta(days=2)),
@@ -116,7 +116,7 @@ async def test_search_excludes_apartment_with_insufficient_capacity(
 async def test_search_rejects_check_out_before_check_in(client: AsyncClient) -> None:
     check_in = date.today() + timedelta(days=10)
     response = await client.get(
-        "/availability/search",
+        "/api/v1/availability/search",
         params={
             "check_in": str(check_in),
             "check_out": str(check_in - timedelta(days=1)),
@@ -130,7 +130,7 @@ async def test_search_requires_no_authentication(client: AsyncClient) -> None:
     """Public — matches the booking-creation endpoint's design (guests have no accounts)."""
     check_in = date.today() + timedelta(days=10)
     response = await client.get(
-        "/availability/search",
+        "/api/v1/availability/search",
         params={
             "check_in": str(check_in),
             "check_out": str(check_in + timedelta(days=1)),

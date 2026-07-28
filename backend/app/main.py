@@ -31,13 +31,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(owners_router)
-app.include_router(apartments_router)
-app.include_router(bookings_router)
-app.include_router(rate_rules_router)
-app.include_router(availability_router)
-app.include_router(payments_router)
-app.include_router(auth_router)
+app.include_router(owners_router, prefix=settings.api_v1_str)
+app.include_router(apartments_router, prefix=settings.api_v1_str)
+app.include_router(bookings_router, prefix=settings.api_v1_str)
+app.include_router(rate_rules_router, prefix=settings.api_v1_str)
+app.include_router(availability_router, prefix=settings.api_v1_str)
+app.include_router(payments_router, prefix=settings.api_v1_str)
+app.include_router(auth_router, prefix=settings.api_v1_str)
 
 register_exception_handlers(app)
 

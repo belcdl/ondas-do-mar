@@ -11,7 +11,7 @@ async def _create_owner(client: AsyncClient, headers: dict[str, str], **override
         "phone": "+34600000000",
     }
     payload.update(overrides)
-    response = await client.post("/owners", json=payload, headers=headers)
+    response = await client.post("/api/v1/owners", json=payload, headers=headers)
     assert response.status_code == 201
     return response.json()
 
@@ -32,7 +32,7 @@ async def _create_apartment(
         "country": "Portugal",
     }
     payload.update(overrides)
-    response = await client.post("/apartments", json=payload, headers=headers)
+    response = await client.post("/api/v1/apartments", json=payload, headers=headers)
     assert response.status_code == 201
     apartment = response.json()
     if with_rate_rule:
@@ -51,7 +51,7 @@ async def _create_rate_rule(
     }
     payload.update(overrides)
     response = await client.post(
-        f"/apartments/{apartment_id}/rate-rules", json=payload, headers=headers
+        f"/api/v1/apartments/{apartment_id}/rate-rules", json=payload, headers=headers
     )
     assert response.status_code == 201
     return response.json()
@@ -72,7 +72,7 @@ def _booking_payload(apartment_id: str, **overrides: object) -> dict:
 
 async def _create_booking(client: AsyncClient, apartment_id: str, **overrides: object) -> dict:
     """No headers — POST /bookings is public (guests have no accounts)."""
-    response = await client.post("/bookings", json=_booking_payload(apartment_id, **overrides))
+    response = await client.post("/api/v1/bookings", json=_booking_payload(apartment_id, **overrides))
     assert response.status_code == 201
     return response.json()
 
@@ -89,7 +89,7 @@ async def test_create_booking(client: AsyncClient, admin_headers: dict[str, str]
 
 
 async def test_create_booking_apartment_not_found(client: AsyncClient) -> None:
-    response = await client.post("/bookings", json=_booking_payload(str(uuid.uuid4())))
+    response = await client.post("/api/v1/bookings", json=_booking_payload(str(uuid.uuid4())))
     assert response.status_code == 404
 
 
@@ -98,9 +98,9 @@ async def test_create_booking_inactive_owner(
 ) -> None:
     owner = await _create_owner(client, admin_headers)
     apartment = await _create_apartment(client, admin_headers, owner["id"])
-    await client.post(f"/owners/{owner['id']}/deactivate", headers=admin_headers)
+    await client.post(f"/api/v1/owners/{owner['id']}/deactivate", headers=admin_headers)
 
-    response = await client.post("/bookings", json=_booking_payload(apartment["id"]))
+    response = await client.post("/api/v1/bookings", json=_booking_payload(apartment["id"]))
     assert response.status_code == 422
 
 
@@ -111,7 +111,7 @@ async def test_create_booking_invalid_dates(
     apartment = await _create_apartment(client, admin_headers, owner["id"])
 
     response = await client.post(
-        "/bookings",
+        "/api/v1/bookings",
         json=_booking_payload(
             apartment["id"],
             check_in_date=str(date.today() + timedelta(days=10)),
@@ -122,7 +122,7 @@ async def test_create_booking_invalid_dates(
 
 
 async def test_create_booking_validation_error(client: AsyncClient) -> None:
-    response = await client.post("/bookings", json={"guest_email": "x@example.com"})
+    response = await client.post("/api/v1/bookings", json={"guest_email": "x@example.com"})
     assert response.status_code == 422
 
 
@@ -132,7 +132,7 @@ async def test_create_booking_zero_guest_count_rejected(
     owner = await _create_owner(client, admin_headers)
     apartment = await _create_apartment(client, admin_headers, owner["id"])
     response = await client.post(
-        "/bookings", json=_booking_payload(apartment["id"], guest_count=0)
+        "/api/v1/bookings", json=_booking_payload(apartment["id"], guest_count=0)
     )
     assert response.status_code == 422
 
@@ -155,7 +155,7 @@ async def test_create_booking_no_rate_rule_rejected(
 ) -> None:
     owner = await _create_owner(client, admin_headers)
     apartment = await _create_apartment(client, admin_headers, owner["id"], with_rate_rule=False)
-    response = await client.post("/bookings", json=_booking_payload(apartment["id"]))
+    response = await client.post("/api/v1/bookings", json=_booking_payload(apartment["id"]))
     assert response.status_code == 422
 
 
@@ -166,7 +166,7 @@ async def test_create_booking_below_minimum_stay_rejected(
     apartment = await _create_apartment(client, admin_headers, owner["id"], with_rate_rule=False)
     await _create_rate_rule(client, admin_headers, apartment["id"], min_stay=10)
 
-    response = await client.post("/bookings", json=_booking_payload(apartment["id"]))
+    response = await client.post("/api/v1/bookings", json=_booking_payload(apartment["id"]))
     assert response.status_code == 422
 
 
@@ -176,13 +176,13 @@ async def test_create_booking_guest_full_name_too_long_returns_422_not_500(
     owner = await _create_owner(client, admin_headers)
     apartment = await _create_apartment(client, admin_headers, owner["id"])
     response = await client.post(
-        "/bookings", json=_booking_payload(apartment["id"], guest_full_name="A" * 500)
+        "/api/v1/bookings", json=_booking_payload(apartment["id"], guest_full_name="A" * 500)
     )
     assert response.status_code == 422
 
 
 async def test_list_bookings_requires_auth(client: AsyncClient) -> None:
-    response = await client.get("/bookings")
+    response = await client.get("/api/v1/bookings")
     assert response.status_code == 401
 
 
@@ -191,7 +191,7 @@ async def test_list_bookings(client: AsyncClient, admin_headers: dict[str, str])
     apartment = await _create_apartment(client, admin_headers, owner["id"])
     booking = await _create_booking(client, apartment["id"])
 
-    response = await client.get("/bookings", headers=admin_headers)
+    response = await client.get("/api/v1/bookings", headers=admin_headers)
     assert response.status_code == 200
     assert any(b["id"] == booking["id"] for b in response.json())
 
@@ -206,7 +206,7 @@ async def test_list_bookings_filter_by_apartment(
     await _create_booking(client, apartment_b["id"])
 
     response = await client.get(
-        "/bookings", params={"apartment_id": apartment_a["id"]}, headers=admin_headers
+        "/api/v1/bookings", params={"apartment_id": apartment_a["id"]}, headers=admin_headers
     )
     assert response.status_code == 200
     assert [b["id"] for b in response.json()] == [booking_a["id"]]
@@ -218,15 +218,15 @@ async def test_list_bookings_filter_by_status(
     owner = await _create_owner(client, admin_headers)
     apartment = await _create_apartment(client, admin_headers, owner["id"])
     booking = await _create_booking(client, apartment["id"])
-    await client.post(f"/bookings/{booking['id']}/confirm", headers=admin_headers)
+    await client.post(f"/api/v1/bookings/{booking['id']}/confirm", headers=admin_headers)
 
     confirmed_response = await client.get(
-        "/bookings", params={"status": "confirmed"}, headers=admin_headers
+        "/api/v1/bookings", params={"status": "confirmed"}, headers=admin_headers
     )
     assert [b["id"] for b in confirmed_response.json()] == [booking["id"]]
 
     pending_response = await client.get(
-        "/bookings", params={"status": "pending"}, headers=admin_headers
+        "/api/v1/bookings", params={"status": "pending"}, headers=admin_headers
     )
     assert booking["id"] not in [b["id"] for b in pending_response.json()]
 
@@ -236,13 +236,13 @@ async def test_get_booking_by_id(client: AsyncClient, admin_headers: dict[str, s
     apartment = await _create_apartment(client, admin_headers, owner["id"])
     booking = await _create_booking(client, apartment["id"])
 
-    response = await client.get(f"/bookings/{booking['id']}", headers=admin_headers)
+    response = await client.get(f"/api/v1/bookings/{booking['id']}", headers=admin_headers)
     assert response.status_code == 200
     assert response.json()["confirmation_code"] == booking["confirmation_code"]
 
 
 async def test_get_booking_not_found(client: AsyncClient, admin_headers: dict[str, str]) -> None:
-    response = await client.get(f"/bookings/{uuid.uuid4()}", headers=admin_headers)
+    response = await client.get(f"/api/v1/bookings/{uuid.uuid4()}", headers=admin_headers)
     assert response.status_code == 404
 
 
@@ -252,7 +252,7 @@ async def test_update_booking(client: AsyncClient, admin_headers: dict[str, str]
     booking = await _create_booking(client, apartment["id"])
 
     response = await client.patch(
-        f"/bookings/{booking['id']}", json={"guest_count": 4}, headers=admin_headers
+        f"/api/v1/bookings/{booking['id']}", json={"guest_count": 4}, headers=admin_headers
     )
     assert response.status_code == 200
     assert response.json()["guest_count"] == 4
@@ -262,7 +262,7 @@ async def test_update_booking_not_found(
     client: AsyncClient, admin_headers: dict[str, str]
 ) -> None:
     response = await client.patch(
-        f"/bookings/{uuid.uuid4()}", json={"guest_count": 4}, headers=admin_headers
+        f"/api/v1/bookings/{uuid.uuid4()}", json={"guest_count": 4}, headers=admin_headers
     )
     assert response.status_code == 404
 
@@ -272,7 +272,7 @@ async def test_confirm_booking(client: AsyncClient, admin_headers: dict[str, str
     apartment = await _create_apartment(client, admin_headers, owner["id"])
     booking = await _create_booking(client, apartment["id"])
 
-    response = await client.post(f"/bookings/{booking['id']}/confirm", headers=admin_headers)
+    response = await client.post(f"/api/v1/bookings/{booking['id']}/confirm", headers=admin_headers)
     assert response.status_code == 200
     assert response.json()["status"] == "confirmed"
     assert response.json()["confirmed_at"] is not None
@@ -283,7 +283,7 @@ async def test_cancel_booking(client: AsyncClient, admin_headers: dict[str, str]
     apartment = await _create_apartment(client, admin_headers, owner["id"])
     booking = await _create_booking(client, apartment["id"])
 
-    response = await client.post(f"/bookings/{booking['id']}/cancel", headers=admin_headers)
+    response = await client.post(f"/api/v1/bookings/{booking['id']}/cancel", headers=admin_headers)
     assert response.status_code == 200
     assert response.json()["status"] == "cancelled"
 
@@ -292,9 +292,9 @@ async def test_complete_booking(client: AsyncClient, admin_headers: dict[str, st
     owner = await _create_owner(client, admin_headers)
     apartment = await _create_apartment(client, admin_headers, owner["id"])
     booking = await _create_booking(client, apartment["id"])
-    await client.post(f"/bookings/{booking['id']}/confirm", headers=admin_headers)
+    await client.post(f"/api/v1/bookings/{booking['id']}/confirm", headers=admin_headers)
 
-    response = await client.post(f"/bookings/{booking['id']}/complete", headers=admin_headers)
+    response = await client.post(f"/api/v1/bookings/{booking['id']}/complete", headers=admin_headers)
     assert response.status_code == 200
     assert response.json()["status"] == "completed"
 
@@ -306,7 +306,7 @@ async def test_complete_pending_booking_fails(
     apartment = await _create_apartment(client, admin_headers, owner["id"])
     booking = await _create_booking(client, apartment["id"])
 
-    response = await client.post(f"/bookings/{booking['id']}/complete", headers=admin_headers)
+    response = await client.post(f"/api/v1/bookings/{booking['id']}/complete", headers=admin_headers)
     assert response.status_code == 422
 
 
@@ -316,17 +316,17 @@ async def test_cancel_completed_booking_fails(
     owner = await _create_owner(client, admin_headers)
     apartment = await _create_apartment(client, admin_headers, owner["id"])
     booking = await _create_booking(client, apartment["id"])
-    await client.post(f"/bookings/{booking['id']}/confirm", headers=admin_headers)
-    await client.post(f"/bookings/{booking['id']}/complete", headers=admin_headers)
+    await client.post(f"/api/v1/bookings/{booking['id']}/confirm", headers=admin_headers)
+    await client.post(f"/api/v1/bookings/{booking['id']}/complete", headers=admin_headers)
 
-    response = await client.post(f"/bookings/{booking['id']}/cancel", headers=admin_headers)
+    response = await client.post(f"/api/v1/bookings/{booking['id']}/cancel", headers=admin_headers)
     assert response.status_code == 422
 
 
 async def test_action_on_nonexistent_booking_404(
     client: AsyncClient, admin_headers: dict[str, str]
 ) -> None:
-    response = await client.post(f"/bookings/{uuid.uuid4()}/confirm", headers=admin_headers)
+    response = await client.post(f"/api/v1/bookings/{uuid.uuid4()}/confirm", headers=admin_headers)
     assert response.status_code == 404
 
 
@@ -352,10 +352,10 @@ async def test_confirming_overlapping_booking_returns_409(
         check_out_date=str(date.today() + timedelta(days=27)),
     )
 
-    confirm_a = await client.post(f"/bookings/{booking_a['id']}/confirm", headers=admin_headers)
+    confirm_a = await client.post(f"/api/v1/bookings/{booking_a['id']}/confirm", headers=admin_headers)
     assert confirm_a.status_code == 200
 
-    confirm_b = await client.post(f"/bookings/{booking_b['id']}/confirm", headers=admin_headers)
+    confirm_b = await client.post(f"/api/v1/bookings/{booking_b['id']}/confirm", headers=admin_headers)
     assert confirm_b.status_code == 409
     assert "not available" in confirm_b.json()["detail"]
 
@@ -402,10 +402,10 @@ async def test_cancelled_booking_frees_dates_for_confirmation(
         check_out_date=str(date.today() + timedelta(days=47)),
     )
 
-    await client.post(f"/bookings/{booking_a['id']}/confirm", headers=admin_headers)
-    await client.post(f"/bookings/{booking_a['id']}/cancel", headers=admin_headers)
+    await client.post(f"/api/v1/bookings/{booking_a['id']}/confirm", headers=admin_headers)
+    await client.post(f"/api/v1/bookings/{booking_a['id']}/cancel", headers=admin_headers)
 
-    confirm_b = await client.post(f"/bookings/{booking_b['id']}/confirm", headers=admin_headers)
+    confirm_b = await client.post(f"/api/v1/bookings/{booking_b['id']}/confirm", headers=admin_headers)
     assert confirm_b.status_code == 200
     assert confirm_b.json()["status"] == "confirmed"
 
@@ -426,7 +426,7 @@ async def test_list_bookings_filter_by_check_in_range(
     )
 
     response = await client.get(
-        "/bookings",
+        "/api/v1/bookings",
         params={
             "check_in_from": str(date.today() + timedelta(days=59)),
             "check_in_to": str(date.today() + timedelta(days=61)),
@@ -437,7 +437,7 @@ async def test_list_bookings_filter_by_check_in_range(
     assert any(b["id"] == booking["id"] for b in response.json())
 
     empty_response = await client.get(
-        "/bookings",
+        "/api/v1/bookings",
         params={"check_in_from": str(date.today() + timedelta(days=200))},
         headers=admin_headers,
     )
@@ -454,7 +454,7 @@ async def test_list_bookings_filter_by_guest_email_case_insensitive(
     )
 
     response = await client.get(
-        "/bookings", params={"guest_email": "filter.me@example.com"}, headers=admin_headers
+        "/api/v1/bookings", params={"guest_email": "filter.me@example.com"}, headers=admin_headers
     )
     assert response.status_code == 200
     assert any(b["id"] == booking["id"] for b in response.json())
@@ -468,17 +468,17 @@ async def test_get_booking_by_confirmation_code(
     apartment = await _create_apartment(client, admin_headers, owner["id"])
     booking = await _create_booking(client, apartment["id"])
 
-    response = await client.get(f"/bookings/by-confirmation/{booking['confirmation_code']}")
+    response = await client.get(f"/api/v1/bookings/by-confirmation/{booking['confirmation_code']}")
     assert response.status_code == 200
     assert response.json()["id"] == booking["id"]
 
     lower_response = await client.get(
-        f"/bookings/by-confirmation/{booking['confirmation_code'].lower()}"
+        f"/api/v1/bookings/by-confirmation/{booking['confirmation_code'].lower()}"
     )
     assert lower_response.status_code == 200
     assert lower_response.json()["id"] == booking["id"]
 
 
 async def test_get_booking_by_confirmation_code_not_found(client: AsyncClient) -> None:
-    response = await client.get("/bookings/by-confirmation/NOPE0000")
+    response = await client.get("/api/v1/bookings/by-confirmation/NOPE0000")
     assert response.status_code == 404

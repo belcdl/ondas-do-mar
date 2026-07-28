@@ -29,7 +29,7 @@ async def _create_owner(client: AsyncClient, headers: dict[str, str], **override
         "phone": "+34600000000",
     }
     payload.update(overrides)
-    response = await client.post("/owners", json=payload, headers=headers)
+    response = await client.post("/api/v1/owners", json=payload, headers=headers)
     assert response.status_code == 201
     return response.json()
 
@@ -45,7 +45,7 @@ async def _create_apartment(
         "country": "Portugal",
     }
     payload.update(overrides)
-    response = await client.post("/apartments", json=payload, headers=headers)
+    response = await client.post("/api/v1/apartments", json=payload, headers=headers)
     assert response.status_code == 201
     apartment = response.json()
     # Every apartment in this file needs pricing before it can be booked, so
@@ -65,7 +65,7 @@ async def _create_rate_rule(
     }
     payload.update(overrides)
     response = await client.post(
-        f"/apartments/{apartment_id}/rate-rules", json=payload, headers=headers
+        f"/api/v1/apartments/{apartment_id}/rate-rules", json=payload, headers=headers
     )
     assert response.status_code == 201
     return response.json()
@@ -81,7 +81,7 @@ async def _create_booking(client: AsyncClient, apartment_id: str, **overrides: o
         "check_out_date": str(date.today() + timedelta(days=15)),
     }
     payload.update(overrides)
-    response = await client.post("/bookings", json=payload)
+    response = await client.post("/api/v1/bookings", json=payload)
     assert response.status_code == 201
     return response.json()
 
@@ -121,7 +121,7 @@ async def test_owner_can_access_own_apartment(
     owner, owner_headers = await _make_owner_with_linked_user(client, db_session, admin_headers)
     apartment = await _create_apartment(client, admin_headers, owner["id"])
 
-    response = await client.get(f"/apartments/{apartment['id']}", headers=owner_headers)
+    response = await client.get(f"/api/v1/apartments/{apartment['id']}", headers=owner_headers)
     assert response.status_code == 200
     assert response.json()["id"] == apartment["id"]
 
@@ -133,7 +133,7 @@ async def test_owner_cannot_access_other_owners_apartment(
     owner_b, _headers_b = await _make_owner_with_linked_user(client, db_session, admin_headers)
     apartment_b = await _create_apartment(client, admin_headers, owner_b["id"])
 
-    response = await client.get(f"/apartments/{apartment_b['id']}", headers=headers_a)
+    response = await client.get(f"/api/v1/apartments/{apartment_b['id']}", headers=headers_a)
     assert response.status_code == 403
 
 
@@ -145,7 +145,7 @@ async def test_owner_apartment_list_scoped_to_own(
     apartment_a = await _create_apartment(client, admin_headers, owner_a["id"])
     await _create_apartment(client, admin_headers, owner_b["id"])
 
-    response = await client.get("/apartments", headers=headers_a)
+    response = await client.get("/api/v1/apartments", headers=headers_a)
     assert response.status_code == 200
     ids = [a["id"] for a in response.json()]
     assert ids == [apartment_a["id"]]
@@ -158,7 +158,7 @@ async def test_owner_can_update_own_apartment(
     apartment = await _create_apartment(client, admin_headers, owner["id"])
 
     response = await client.patch(
-        f"/apartments/{apartment['id']}", json={"bedrooms": 2}, headers=owner_headers
+        f"/api/v1/apartments/{apartment['id']}", json={"bedrooms": 2}, headers=owner_headers
     )
     assert response.status_code == 200
     assert response.json()["bedrooms"] == 2
@@ -172,7 +172,7 @@ async def test_owner_cannot_update_other_owners_apartment(
     apartment_b = await _create_apartment(client, admin_headers, owner_b["id"])
 
     response = await client.patch(
-        f"/apartments/{apartment_b['id']}", json={"bedrooms": 2}, headers=headers_a
+        f"/api/v1/apartments/{apartment_b['id']}", json={"bedrooms": 2}, headers=headers_a
     )
     assert response.status_code == 403
 
@@ -184,7 +184,7 @@ async def test_owner_cannot_create_apartment_for_another_owner(
     owner_b, _headers_b = await _make_owner_with_linked_user(client, db_session, admin_headers)
 
     response = await client.post(
-        "/apartments",
+        "/api/v1/apartments",
         json={
             "owner_id": owner_b["id"],
             "name": "Stolen",
@@ -205,7 +205,7 @@ async def test_owner_cannot_deactivate_other_owners_apartment(
     apartment_b = await _create_apartment(client, admin_headers, owner_b["id"])
 
     response = await client.post(
-        f"/apartments/{apartment_b['id']}/deactivate", headers=headers_a
+        f"/api/v1/apartments/{apartment_b['id']}/deactivate", headers=headers_a
     )
     assert response.status_code == 403
 
@@ -218,7 +218,7 @@ async def test_owner_cannot_reassign_own_apartment_to_another_owner(
     apartment_a = await _create_apartment(client, admin_headers, owner_a["id"])
 
     response = await client.patch(
-        f"/apartments/{apartment_a['id']}", json={"owner_id": owner_b["id"]}, headers=headers_a
+        f"/api/v1/apartments/{apartment_a['id']}", json={"owner_id": owner_b["id"]}, headers=headers_a
     )
     assert response.status_code == 403
 
@@ -233,7 +233,7 @@ async def test_owner_can_access_own_booking(
     apartment = await _create_apartment(client, admin_headers, owner["id"])
     booking = await _create_booking(client, apartment["id"])
 
-    response = await client.get(f"/bookings/{booking['id']}", headers=owner_headers)
+    response = await client.get(f"/api/v1/bookings/{booking['id']}", headers=owner_headers)
     assert response.status_code == 200
     assert response.json()["id"] == booking["id"]
 
@@ -246,7 +246,7 @@ async def test_owner_cannot_access_other_owners_booking(
     apartment_b = await _create_apartment(client, admin_headers, owner_b["id"])
     booking_b = await _create_booking(client, apartment_b["id"])
 
-    response = await client.get(f"/bookings/{booking_b['id']}", headers=headers_a)
+    response = await client.get(f"/api/v1/bookings/{booking_b['id']}", headers=headers_a)
     assert response.status_code == 403
 
 
@@ -260,7 +260,7 @@ async def test_owner_booking_list_scoped_to_own(
     booking_a = await _create_booking(client, apartment_a["id"])
     await _create_booking(client, apartment_b["id"])
 
-    response = await client.get("/bookings", headers=headers_a)
+    response = await client.get("/api/v1/bookings", headers=headers_a)
     assert response.status_code == 200
     ids = [b["id"] for b in response.json()]
     assert ids == [booking_a["id"]]
@@ -279,7 +279,7 @@ async def test_owner_supplied_owner_id_filter_is_overridden_not_trusted(
     await _create_booking(client, apartment_b["id"])
 
     response = await client.get(
-        "/bookings", params={"owner_id": owner_b["id"]}, headers=headers_a
+        "/api/v1/bookings", params={"owner_id": owner_b["id"]}, headers=headers_a
     )
     assert response.status_code == 200
     ids = [b["id"] for b in response.json()]
@@ -294,7 +294,7 @@ async def test_owner_cannot_confirm_other_owners_booking(
     apartment_b = await _create_apartment(client, admin_headers, owner_b["id"])
     booking_b = await _create_booking(client, apartment_b["id"])
 
-    response = await client.post(f"/bookings/{booking_b['id']}/confirm", headers=headers_a)
+    response = await client.post(f"/api/v1/bookings/{booking_b['id']}/confirm", headers=headers_a)
     assert response.status_code == 403
 
 
@@ -309,7 +309,7 @@ async def test_owner_cannot_set_own_booking_total_price(
     booking = await _create_booking(client, apartment["id"])
 
     response = await client.patch(
-        f"/bookings/{booking['id']}", json={"total_price": "1.00"}, headers=owner_headers
+        f"/api/v1/bookings/{booking['id']}", json={"total_price": "1.00"}, headers=owner_headers
     )
     assert response.status_code == 403
 
@@ -322,7 +322,7 @@ async def test_admin_can_set_booking_total_price(
     booking = await _create_booking(client, apartment["id"])
 
     response = await client.patch(
-        f"/bookings/{booking['id']}", json={"total_price": "500.00"}, headers=admin_headers
+        f"/api/v1/bookings/{booking['id']}", json={"total_price": "500.00"}, headers=admin_headers
     )
     assert response.status_code == 200
     assert response.json()["total_price"] == "500.00"
@@ -336,11 +336,11 @@ async def test_owner_can_view_and_update_own_profile(
 ) -> None:
     owner, owner_headers = await _make_owner_with_linked_user(client, db_session, admin_headers)
 
-    get_response = await client.get(f"/owners/{owner['id']}", headers=owner_headers)
+    get_response = await client.get(f"/api/v1/owners/{owner['id']}", headers=owner_headers)
     assert get_response.status_code == 200
 
     patch_response = await client.patch(
-        f"/owners/{owner['id']}", json={"phone": "+34600999888"}, headers=owner_headers
+        f"/api/v1/owners/{owner['id']}", json={"phone": "+34600999888"}, headers=owner_headers
     )
     assert patch_response.status_code == 200
     assert patch_response.json()["phone"] == "+34600999888"
@@ -352,7 +352,7 @@ async def test_owner_cannot_view_another_owners_profile(
     _owner_a, headers_a = await _make_owner_with_linked_user(client, db_session, admin_headers)
     owner_b, _headers_b = await _make_owner_with_linked_user(client, db_session, admin_headers)
 
-    response = await client.get(f"/owners/{owner_b['id']}", headers=headers_a)
+    response = await client.get(f"/api/v1/owners/{owner_b['id']}", headers=headers_a)
     assert response.status_code == 403
 
 
@@ -362,7 +362,7 @@ async def test_owner_cannot_relink_own_user_id(
     owner, owner_headers = await _make_owner_with_linked_user(client, db_session, admin_headers)
 
     response = await client.patch(
-        f"/owners/{owner['id']}", json={"user_id": str(uuid.uuid4())}, headers=owner_headers
+        f"/api/v1/owners/{owner['id']}", json={"user_id": str(uuid.uuid4())}, headers=owner_headers
     )
     assert response.status_code == 403
 
@@ -374,7 +374,7 @@ async def test_admin_can_access_any_owner_profile(
     client: AsyncClient, db_session: AsyncSession, admin_headers: dict[str, str]
 ) -> None:
     owner, _headers = await _make_owner_with_linked_user(client, db_session, admin_headers)
-    response = await client.get(f"/owners/{owner['id']}", headers=admin_headers)
+    response = await client.get(f"/api/v1/owners/{owner['id']}", headers=admin_headers)
     assert response.status_code == 200
 
 
@@ -383,7 +383,7 @@ async def test_admin_can_access_any_apartment(
 ) -> None:
     owner, _headers = await _make_owner_with_linked_user(client, db_session, admin_headers)
     apartment = await _create_apartment(client, admin_headers, owner["id"])
-    response = await client.get(f"/apartments/{apartment['id']}", headers=admin_headers)
+    response = await client.get(f"/api/v1/apartments/{apartment['id']}", headers=admin_headers)
     assert response.status_code == 200
 
 
@@ -393,7 +393,7 @@ async def test_admin_can_access_any_booking(
     owner, _headers = await _make_owner_with_linked_user(client, db_session, admin_headers)
     apartment = await _create_apartment(client, admin_headers, owner["id"])
     booking = await _create_booking(client, apartment["id"])
-    response = await client.get(f"/bookings/{booking['id']}", headers=admin_headers)
+    response = await client.get(f"/api/v1/bookings/{booking['id']}", headers=admin_headers)
     assert response.status_code == 200
 
 
@@ -407,7 +407,7 @@ async def test_admin_can_list_all_bookings_across_owners(
     booking_a = await _create_booking(client, apartment_a["id"])
     booking_b = await _create_booking(client, apartment_b["id"])
 
-    response = await client.get("/bookings", headers=admin_headers)
+    response = await client.get("/api/v1/bookings", headers=admin_headers)
     ids = {b["id"] for b in response.json()}
     assert {booking_a["id"], booking_b["id"]}.issubset(ids)
 
@@ -416,7 +416,7 @@ async def test_admin_can_list_all_bookings_across_owners(
 
 
 async def test_unauthenticated_request_returns_401(client: AsyncClient) -> None:
-    response = await client.get(f"/apartments/{uuid.uuid4()}")
+    response = await client.get(f"/api/v1/apartments/{uuid.uuid4()}")
     assert response.status_code == 401
 
 
@@ -429,7 +429,7 @@ async def test_authenticated_owner_without_permission_returns_403_not_404(
     owner_b, _headers_b = await _make_owner_with_linked_user(client, db_session, admin_headers)
     apartment_b = await _create_apartment(client, admin_headers, owner_b["id"])
 
-    response = await client.get(f"/apartments/{apartment_b['id']}", headers=headers_a)
+    response = await client.get(f"/api/v1/apartments/{apartment_b['id']}", headers=headers_a)
     assert response.status_code == 403
     assert response.status_code != 404
 
@@ -440,5 +440,5 @@ async def test_genuinely_missing_resource_still_returns_404(
     """Contrast with the above: a resource that truly doesn't exist is still
     a real 404, not disguised as 403 either."""
     _owner, owner_headers = await _make_owner_with_linked_user(client, db_session, admin_headers)
-    response = await client.get(f"/apartments/{uuid.uuid4()}", headers=owner_headers)
+    response = await client.get(f"/api/v1/apartments/{uuid.uuid4()}", headers=owner_headers)
     assert response.status_code == 404

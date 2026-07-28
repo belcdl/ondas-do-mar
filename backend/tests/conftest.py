@@ -1,4 +1,9 @@
+import asyncio
+import sys
 import uuid
+
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient

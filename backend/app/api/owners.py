@@ -6,6 +6,7 @@ from app.api.deps import (
     get_apartment_service,
     get_authorized_owner,
     get_current_active_user,
+    get_current_owner_or_none,
     get_owner_service,
     require_admin,
 )
@@ -17,7 +18,7 @@ from app.schemas.apartment import ApartmentRead
 from app.schemas.owner import OwnerCreate, OwnerRead, OwnerUpdate
 from app.schemas.owner_invitation import OwnerInvitationCreated
 from app.services.apartment import ApartmentService
-from app.services.owner import OwnerService
+from app.services.owner import OwnerNotFoundError, OwnerService
 
 router = APIRouter(prefix="/owners", tags=["owners"])
 
@@ -42,6 +43,19 @@ async def list_owners(
 ) -> list[Owner]:
     """Admin-only. List owners. Only active owners are returned unless include_inactive=true."""
     return await service.list_owners(include_inactive=include_inactive)
+
+
+@router.get("/me", response_model=OwnerRead)
+async def get_own_owner_profile(
+    caller_owner: Owner | None = Depends(get_current_owner_or_none),
+) -> Owner:
+    """The Owner linked to the logged-in user. 404 if there is none — an
+    admin, or an owner-role user not yet linked to an Owner record, both
+    legitimately hit this. Registered above /{owner_id} so "me" is matched
+    literally instead of being swallowed as an invalid owner_id UUID."""
+    if caller_owner is None:
+        raise OwnerNotFoundError("No owner is linked to the current user")
+    return caller_owner
 
 
 @router.get("/{owner_id}", response_model=OwnerRead)
