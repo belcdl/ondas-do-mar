@@ -3,7 +3,9 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
-  modules: ['@nuxtjs/i18n'],
+  modules: ['@nuxtjs/i18n', '@nuxt/ui'],
+
+  css: ['~/assets/css/main.css'],
 
   // Backend's BACKEND_CORS_ORIGINS is locked to http://localhost:5173 — the
   // dev server must stay on this port, not Nuxt's default 3000.

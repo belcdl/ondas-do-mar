@@ -38,9 +38,9 @@ and [`CLAUDE.md`](CLAUDE.md) for project conventions and guidelines.
    - Backend API: http://localhost:8000
      - `/health` — liveness (process is up)
      - `/health/db` — readiness (verifies PostgreSQL connectivity)
-     - `/owners` — Owner CRUD (includes `GET /owners/{id}/apartments`)
-     - `/apartments` — Apartment CRUD
-     - `/bookings` — Booking CRUD + confirm/cancel/complete actions (see `/docs` for the full Swagger schema)
+     - `/api/v1/owners` — Owner CRUD (includes `GET /api/v1/owners/{id}/apartments`)
+     - `/api/v1/apartments` — Apartment CRUD
+     - `/api/v1/bookings` — Booking CRUD + confirm/cancel/complete actions (see `/docs` for the full Swagger schema)
    - PostgreSQL: localhost:5432
 
 ## Project structure

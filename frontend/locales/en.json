@@ -9,7 +9,60 @@
   "panel": {
     "greeting": "Hello, {name}",
     "logout": "Log out",
-    "placeholder": "Apartment, rate, and booking management will be available in a future iteration."
+    "apartmentsLink": "View my apartments",
+    "placeholder": "Rate and booking management will be available in a future iteration."
+  },
+  "panelApartments": {
+    "title": "My apartments",
+    "newApartment": "New apartment",
+    "showInactive": "Show inactive",
+    "empty": "You don't have any apartments yet.",
+    "noLinkedOwner": "You don't have an owner profile linked to your account.",
+    "table": {
+      "name": "Name",
+      "city": "City",
+      "bedrooms": "Bedrooms",
+      "maxGuests": "Max guests",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "actions": {
+      "edit": "Edit",
+      "deactivate": "Deactivate"
+    },
+    "form": {
+      "createTitle": "New apartment",
+      "editTitle": "Edit apartment",
+      "name": "Name",
+      "addressLine": "Address",
+      "city": "City",
+      "postalCode": "Postal code",
+      "country": "Country",
+      "description": "Description",
+      "bedrooms": "Bedrooms",
+      "maxGuests": "Max guests",
+      "submit": "Save",
+      "cancel": "Cancel"
+    },
+    "deactivateConfirm": {
+      "title": "Deactivate apartment",
+      "message": "Are you sure you want to deactivate \"{name}\"? It will stop showing up in availability search; you can still see it here by turning on \"show inactive\".",
+      "confirm": "Deactivate",
+      "cancel": "Cancel"
+    },
+    "toast": {
+      "createSuccess": "Apartment created",
+      "createError": "Could not create the apartment",
+      "updateSuccess": "Apartment updated",
+      "updateError": "Could not update the apartment",
+      "deactivateSuccess": "Apartment deactivated",
+      "deactivateError": "Could not deactivate the apartment",
+      "loadError": "Could not load apartments"
+    }
   },
   "availability": {
     "title": "Search availability",

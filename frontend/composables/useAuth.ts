@@ -51,6 +51,10 @@ export function useAuth() {
       // (JWTs can't be invalidated without a blacklist, see auth.py).
     }
     token.value = null
+    // Client-side navigation after logout doesn't reset useState, so a
+    // different owner logging in on the same tab would otherwise see the
+    // previous session's cached Owner until a full page reload.
+    useOwner().clearOwner()
   }
 
   async function fetchMe(): Promise<AuthUser | null> {

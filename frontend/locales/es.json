@@ -9,7 +9,60 @@
   "panel": {
     "greeting": "Hola, {name}",
     "logout": "Cerrar sesión",
-    "placeholder": "La gestión de apartamentos, tarifas y reservas estará disponible en una próxima iteración."
+    "apartmentsLink": "Ver mis apartamentos",
+    "placeholder": "La gestión de tarifas y reservas estará disponible en una próxima iteración."
+  },
+  "panelApartments": {
+    "title": "Mis apartamentos",
+    "newApartment": "Nuevo apartamento",
+    "showInactive": "Mostrar inactivos",
+    "empty": "Todavía no tienes apartamentos.",
+    "noLinkedOwner": "No tienes un perfil de propietario vinculado a tu cuenta.",
+    "table": {
+      "name": "Nombre",
+      "city": "Ciudad",
+      "bedrooms": "Habitaciones",
+      "maxGuests": "Huéspedes máx.",
+      "status": "Estado",
+      "actions": "Acciones"
+    },
+    "status": {
+      "active": "Activo",
+      "inactive": "Inactivo"
+    },
+    "actions": {
+      "edit": "Editar",
+      "deactivate": "Desactivar"
+    },
+    "form": {
+      "createTitle": "Nuevo apartamento",
+      "editTitle": "Editar apartamento",
+      "name": "Nombre",
+      "addressLine": "Dirección",
+      "city": "Ciudad",
+      "postalCode": "Código postal",
+      "country": "País",
+      "description": "Descripción",
+      "bedrooms": "Habitaciones",
+      "maxGuests": "Huéspedes máximos",
+      "submit": "Guardar",
+      "cancel": "Cancelar"
+    },
+    "deactivateConfirm": {
+      "title": "Desactivar apartamento",
+      "message": "¿Seguro que quieres desactivar \"{name}\"? Dejará de aparecer en la búsqueda de disponibilidad; puedes seguir viéndolo aquí activando \"mostrar inactivos\".",
+      "confirm": "Desactivar",
+      "cancel": "Cancelar"
+    },
+    "toast": {
+      "createSuccess": "Apartamento creado",
+      "createError": "No se pudo crear el apartamento",
+      "updateSuccess": "Apartamento actualizado",
+      "updateError": "No se pudo actualizar el apartamento",
+      "deactivateSuccess": "Apartamento desactivado",
+      "deactivateError": "No se pudo desactivar el apartamento",
+      "loadError": "No se pudieron cargar los apartamentos"
+    }
   },
   "availability": {
     "title": "Buscar disponibilidad",

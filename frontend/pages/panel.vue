@@ -20,6 +20,6 @@ async function onLogout() {
     <LocaleSwitcher />
     <h1>{{ t('panel.greeting', { name: user.full_name }) }}</h1>
     <button type="button" @click="onLogout">{{ t('panel.logout') }}</button>
-    <p>{{ t('panel.placeholder') }}</p>
+    <NuxtPage />
   </div>
 </template>

@@ -8,11 +8,11 @@ in [`CLAUDE.md`](../CLAUDE.md).
 
 ## Services
 
-| Service  | Tech                          | Container | Port |
-|----------|-------------------------------|-----------|------|
-| frontend | Vue 3 + Vite + TypeScript     | frontend  | 5173 |
-| backend  | FastAPI + SQLAlchemy 2 (async)| backend   | 8000 |
-| db       | PostgreSQL 16 + pgvector      | db        | 5432 |
+| Service  | Tech                                  | Container | Port |
+|----------|---------------------------------------|-----------|------|
+| frontend | Vue 3 + Nuxt 3 (SSR/SSG) + TypeScript | frontend  | 5173 |
+| backend  | FastAPI + SQLAlchemy 2 (async)        | backend   | 8000 |
+| db       | PostgreSQL 16 + pgvector              | db        | 5432 |
 
 ## Key decisions
 
@@ -147,6 +147,10 @@ in [`CLAUDE.md`](../CLAUDE.md).
 
 ## Planned integrations (not yet implemented)
 
-- **Stripe Connect** — for owner payouts/marketplace payments.
+- **Stripe Connect** — for owner payouts/marketplace payments across the 6
+  independent owners. Note: single-account Stripe Checkout (hosted page) for
+  guest payments *is* already implemented (`app/services/payment.py`,
+  `app/api/payments.py`) — Connect is only about splitting a payout across
+  owners, not payments in general.
 - **iCal synchronization** — for external calendar availability sync.
 - **pgvector-based RAG** — semantic search / assistant features.

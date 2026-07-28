@@ -727,3 +727,23 @@ Alternatives:
 Status:
 
 Accepted
+
+# Decision 043
+
+All business routers (`owners`, `apartments`, `bookings`, `rate_rules`, `availability`, `payments`, `auth`) are now mounted under `/api/v1`, via `prefix=settings.api_v1_str` on each `app.include_router(...)` call in `main.py` rather than by changing any router's own internal `prefix`. `/health` and `/health/db` stay unversioned, at the root.
+
+Reason:
+
+- `Settings.api_v1_str` has existed since the initial scaffold as a declared-but-unused field — this sprint is the first time anything actually reads it, closing a small piece of dead configuration rather than introducing new config surface
+- Right now is the cheapest this will ever be to do: there are no external API consumers yet (the only client is this repo's own Nuxt frontend, updated in the same change), so there's no deprecation window, no dual-routing period, and no coordination with anyone outside this repo. Adding versioning later, once a mobile app or a partner integration depends on unversioned paths, would mean either breaking them or running two route trees side by side
+- Applying the prefix at `include_router(...)` time, instead of editing each router's own `prefix=`, keeps every router module honest about its own path structure (`/owners`, `/apartments`, etc.) independent of where it happens to be mounted — `rate_rules` and `payments`, which declare full paths per-endpoint instead of a router-level `prefix`, needed no changes at all
+- `/health` and `/health/db` are deliberately excluded: they're infrastructure liveness/readiness checks (read by orchestrators, load balancers, uptime monitors), not business API surface. Versioning them would force every external monitor to know about and track API version bumps for a check that has nothing to do with the business API's contract — the standard convention (Kubernetes, most cloud load balancers) is an unversioned, stable healthcheck path
+
+Alternatives:
+
+- Version `/health`/`/health/db` too, for consistency with every other route (rejected — infrastructure tooling that polls a healthcheck shouldn't need to change its target when the business API's version bumps to v2; keeping it stable is the point)
+- Set each router's own `prefix` to include `/api/v1` directly instead of passing `prefix=` to `include_router` (rejected — would leave the version baked into every router module instead of in the one place, `main.py`, that actually decides how the app is mounted; also wouldn't have worked uniformly, since `rate_rules` and `payments` don't have a router-level `prefix` to edit)
+
+Status:
+
+Accepted
