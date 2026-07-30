@@ -236,6 +236,12 @@ async function confirmDeactivate() {
               @click="openEditForm(row.original)"
             />
             <UButton
+              size="sm"
+              variant="ghost"
+              :label="t('panelApartments.actions.rateRules')"
+              :to="`/panel/apartments/${row.original.id}/rate-rules`"
+            />
+            <UButton
               v-if="row.original.is_active"
               size="sm"
               variant="ghost"

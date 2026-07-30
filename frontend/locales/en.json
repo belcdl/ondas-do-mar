@@ -32,7 +32,8 @@
     },
     "actions": {
       "edit": "Edit",
-      "deactivate": "Deactivate"
+      "deactivate": "Deactivate",
+      "rateRules": "Rates"
     },
     "form": {
       "createTitle": "New apartment",
@@ -62,6 +63,47 @@
       "deactivateSuccess": "Apartment deactivated",
       "deactivateError": "Could not deactivate the apartment",
       "loadError": "Could not load apartments"
+    }
+  },
+  "panelRateRules": {
+    "title": "Rates and seasons — {name}",
+    "newRule": "New season",
+    "empty": "There are no seasons for this apartment yet.",
+    "backLink": "← Back to my apartments",
+    "table": {
+      "dateRange": "Date range",
+      "pricePerNight": "Price/night",
+      "minStay": "Minimum stay",
+      "actions": "Actions"
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "form": {
+      "createTitle": "New season",
+      "editTitle": "Edit season",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "pricePerNight": "Price per night",
+      "minStay": "Minimum stay (nights)",
+      "submit": "Save",
+      "cancel": "Cancel"
+    },
+    "deleteConfirm": {
+      "title": "Delete season",
+      "message": "Are you sure you want to delete the season {dateRange}? This action cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "toast": {
+      "loadError": "Could not load seasons",
+      "createSuccess": "Season created",
+      "createError": "Could not create the season",
+      "updateSuccess": "Season updated",
+      "updateError": "Could not update the season",
+      "deleteSuccess": "Season deleted",
+      "deleteError": "Could not delete the season"
     }
   },
   "availability": {

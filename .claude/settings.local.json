@@ -49,7 +49,9 @@
       "Bash(grep -oE \"<tbody.{0,800}\")",
       "Bash(grep -oE \"<tbody.{0,300}\")",
       "Bash(grep -oE \"<tbody.{0,1200}\")",
-      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\([a['name']+':'+str\\(a['is_active']\\) for a in d]\\)\")"
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\([a['name']+':'+str\\(a['is_active']\\) for a in d]\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('\\\\n'.join\\(p for p in sorted\\(d['paths'].keys\\(\\)\\) if 'blocked' in p\\)\\)\")",
+      "Bash(git add *)"
     ]
   }
 }

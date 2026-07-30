@@ -32,7 +32,8 @@
     },
     "actions": {
       "edit": "Editar",
-      "deactivate": "Desactivar"
+      "deactivate": "Desactivar",
+      "rateRules": "Temporadas"
     },
     "form": {
       "createTitle": "Nuevo apartamento",
@@ -62,6 +63,47 @@
       "deactivateSuccess": "Apartamento desactivado",
       "deactivateError": "No se pudo desactivar el apartamento",
       "loadError": "No se pudieron cargar los apartamentos"
+    }
+  },
+  "panelRateRules": {
+    "title": "Temporadas y precios — {name}",
+    "newRule": "Nueva temporada",
+    "empty": "Todavía no hay temporadas para este apartamento.",
+    "backLink": "← Volver a mis apartamentos",
+    "table": {
+      "dateRange": "Rango de fechas",
+      "pricePerNight": "Precio/noche",
+      "minStay": "Estancia mínima",
+      "actions": "Acciones"
+    },
+    "actions": {
+      "edit": "Editar",
+      "delete": "Borrar"
+    },
+    "form": {
+      "createTitle": "Nueva temporada",
+      "editTitle": "Editar temporada",
+      "startDate": "Fecha de inicio",
+      "endDate": "Fecha de fin",
+      "pricePerNight": "Precio por noche",
+      "minStay": "Estancia mínima (noches)",
+      "submit": "Guardar",
+      "cancel": "Cancelar"
+    },
+    "deleteConfirm": {
+      "title": "Borrar temporada",
+      "message": "¿Seguro que quieres borrar la temporada {dateRange}? Esta acción no se puede deshacer.",
+      "confirm": "Borrar",
+      "cancel": "Cancelar"
+    },
+    "toast": {
+      "loadError": "No se pudieron cargar las temporadas",
+      "createSuccess": "Temporada creada",
+      "createError": "No se pudo crear la temporada",
+      "updateSuccess": "Temporada actualizada",
+      "updateError": "No se pudo actualizar la temporada",
+      "deleteSuccess": "Temporada borrada",
+      "deleteError": "No se pudo borrar la temporada"
     }
   },
   "availability": {
