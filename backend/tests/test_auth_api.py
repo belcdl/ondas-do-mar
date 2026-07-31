@@ -147,3 +147,79 @@ async def test_owner_only_rejects_admin(client: AsyncClient, db_session: AsyncSe
     admin = await _create_user(db_session, role=UserRole.ADMIN)
     response = await client.get("/api/v1/auth/owner-only", headers=_auth_headers(admin))
     assert response.status_code == 403
+
+
+async def test_admin_reset_password_allows_login_with_new_password(
+    client: AsyncClient, db_session: AsyncSession
+) -> None:
+    admin = await _create_user(db_session, role=UserRole.ADMIN)
+    user = await _create_user(db_session)
+
+    response = await client.post(
+        "/api/v1/auth/admin/reset-password",
+        json={"email": user.email, "new_password": "BrandNewPass1!"},
+        headers=_auth_headers(admin),
+    )
+    assert response.status_code == 204
+
+    login_response = await client.post(
+        "/api/v1/auth/login",
+        data={"username": user.email, "password": "BrandNewPass1!"},
+    )
+    assert login_response.status_code == 200
+    assert login_response.json()["access_token"]
+
+
+async def test_admin_reset_password_invalidates_old_password(
+    client: AsyncClient, db_session: AsyncSession
+) -> None:
+    admin = await _create_user(db_session, role=UserRole.ADMIN)
+    user = await _create_user(db_session)
+
+    response = await client.post(
+        "/api/v1/auth/admin/reset-password",
+        json={"email": user.email, "new_password": "BrandNewPass1!"},
+        headers=_auth_headers(admin),
+    )
+    assert response.status_code == 204
+
+    old_password_login = await client.post(
+        "/api/v1/auth/login",
+        data={"username": user.email, "password": DEFAULT_PASSWORD},
+    )
+    assert old_password_login.status_code == 401
+
+
+async def test_admin_reset_password_rejects_non_admin(
+    client: AsyncClient, db_session: AsyncSession
+) -> None:
+    owner_user = await _create_user(db_session, role=UserRole.OWNER)
+    target = await _create_user(db_session)
+
+    response = await client.post(
+        "/api/v1/auth/admin/reset-password",
+        json={"email": target.email, "new_password": "BrandNewPass1!"},
+        headers=_auth_headers(owner_user),
+    )
+    assert response.status_code == 403
+
+
+async def test_admin_reset_password_requires_token(client: AsyncClient) -> None:
+    response = await client.post(
+        "/api/v1/auth/admin/reset-password",
+        json={"email": "nobody@example.com", "new_password": "BrandNewPass1!"},
+    )
+    assert response.status_code == 401
+
+
+async def test_admin_reset_password_unknown_email_returns_404(
+    client: AsyncClient, db_session: AsyncSession
+) -> None:
+    admin = await _create_user(db_session, role=UserRole.ADMIN)
+
+    response = await client.post(
+        "/api/v1/auth/admin/reset-password",
+        json={"email": "nobody@example.com", "new_password": "BrandNewPass1!"},
+        headers=_auth_headers(admin),
+    )
+    assert response.status_code == 404

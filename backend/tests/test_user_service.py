@@ -8,7 +8,7 @@ from app.core.security import create_access_token
 from app.models.user import UserRole
 from app.repositories.user import UserRepository
 from app.schemas.user import UserCreate
-from app.services.user import InvalidCredentialsError, UserService
+from app.services.user import InvalidCredentialsError, UserNotFoundError, UserService
 
 
 def _user_payload(**overrides: object) -> UserCreate:
@@ -92,3 +92,28 @@ async def test_get_user_from_token_unknown_user_raises(db_session: AsyncSession)
     token = create_access_token(subject=str(uuid.uuid4()))
     with pytest.raises(AuthenticationError):
         await service.get_user_from_token(token)
+
+
+async def test_reset_password_changes_the_stored_hash(db_session: AsyncSession) -> None:
+    service = UserService(UserRepository(db_session))
+    created = await service.create_user(_user_payload(password="old-password"))
+    # SQLAlchemy's identity map means reset_password's get_by_email returns
+    # this exact same object, not a fresh copy — capture the hash as a
+    # plain string first so the "before" comparison isn't mutated in place
+    # along with it.
+    original_hash = created.hashed_password
+
+    reset_user = await service.reset_password(created.email, "new-password")
+    assert reset_user.id == created.id
+    assert reset_user.hashed_password != original_hash
+
+    with pytest.raises(InvalidCredentialsError):
+        await service.authenticate(created.email, "old-password")
+    authenticated = await service.authenticate(created.email, "new-password")
+    assert authenticated.id == created.id
+
+
+async def test_reset_password_unknown_email_raises_not_found(db_session: AsyncSession) -> None:
+    service = UserService(UserRepository(db_session))
+    with pytest.raises(UserNotFoundError):
+        await service.reset_password("nobody@example.com", "whatever-password")

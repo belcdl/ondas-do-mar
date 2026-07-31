@@ -3,7 +3,7 @@ import uuid
 from jwt import PyJWTError
 from sqlalchemy.exc import DataError, IntegrityError
 
-from app.core.exceptions import AuthenticationError, ConflictError, ValidationError
+from app.core.exceptions import AuthenticationError, ConflictError, NotFoundError, ValidationError
 from app.core.security import create_access_token, decode_access_token, hash_password, verify_password
 from app.models.user import User
 from app.repositories.user import UserRepository
@@ -12,6 +12,10 @@ from app.schemas.user import UserCreate
 
 class InvalidCredentialsError(AuthenticationError):
     """Raised when login credentials (email/password) are incorrect."""
+
+
+class UserNotFoundError(NotFoundError):
+    """Raised when no user exists for the given email."""
 
 
 class UserService:
@@ -73,3 +77,12 @@ class UserService:
         if user is None:
             raise AuthenticationError("Could not validate credentials")
         return user
+
+    async def reset_password(self, email: str, new_password: str) -> User:
+        """Admin-initiated password reset — the API-driven, auditable
+        replacement for reaching into the database with scripts/reset_password.py."""
+        user = await self.repository.get_by_email(email)
+        if user is None:
+            raise UserNotFoundError(f"User with email {email} not found")
+        user.hashed_password = hash_password(new_password)
+        return await self.repository.update(user)

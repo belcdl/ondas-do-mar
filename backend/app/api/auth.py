@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.api.deps import (
@@ -11,7 +11,7 @@ from app.api.deps import (
 from app.models.user import User
 from app.schemas.owner_invitation import AcceptInvitationRequest
 from app.schemas.token import Token
-from app.schemas.user import UserRead
+from app.schemas.user import AdminPasswordResetRequest, UserRead
 from app.services.owner import OwnerService
 from app.services.user import UserService
 
@@ -44,6 +44,22 @@ async def accept_invitation(
         data.token, data.password, data.full_name
     )
     return Token(access_token=access_token)
+
+
+@router.post(
+    "/admin/reset-password",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def admin_reset_password(
+    data: AdminPasswordResetRequest,
+    _current_user: User = Depends(require_admin),
+    service: UserService = Depends(get_user_service),
+) -> None:
+    """Admin-only. Reset any user's password directly via the API — the
+    auditable replacement for reaching into the database with
+    scripts/reset_password.py. 404 if no user exists for the given email,
+    403 if the caller isn't an admin."""
+    await service.reset_password(data.email, data.new_password)
 
 
 @router.post("/logout")
