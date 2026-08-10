@@ -6,6 +6,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.apartment_photos import router as apartment_photos_router
 from app.api.apartments import router as apartments_router
 from app.api.auth import router as auth_router
 from app.api.availability import router as availability_router
@@ -37,6 +38,7 @@ app.include_router(apartments_router, prefix=settings.api_v1_str)
 app.include_router(bookings_router, prefix=settings.api_v1_str)
 app.include_router(rate_rules_router, prefix=settings.api_v1_str)
 app.include_router(blocked_dates_router, prefix=settings.api_v1_str)
+app.include_router(apartment_photos_router, prefix=settings.api_v1_str)
 app.include_router(availability_router, prefix=settings.api_v1_str)
 app.include_router(payments_router, prefix=settings.api_v1_str)
 app.include_router(auth_router, prefix=settings.api_v1_str)

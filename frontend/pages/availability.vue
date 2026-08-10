@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { TableColumn } from '@nuxt/ui'
+
 interface NightPrice {
   date: string
   price: string
@@ -44,49 +46,75 @@ async function onSearch() {
     isSearching.value = false
   }
 }
+
+const columns: TableColumn<AvailabilityResult>[] = [
+  { accessorKey: 'name', header: t('availability.table.apartment') },
+  { accessorKey: 'nights', header: t('availability.table.nights') },
+  { id: 'priceTotal', header: t('availability.table.priceTotal') },
+  { id: 'available', header: t('availability.table.available') },
+]
 </script>
 
 <template>
-  <div>
-    <LocaleSwitcher />
-    <h1>{{ t('availability.title') }}</h1>
+  <div class="min-h-screen bg-neutral-50">
+    <header class="flex items-center justify-between px-6 py-4">
+      <AppLogo :height="48" />
+      <LocaleSwitcher />
+    </header>
 
-    <form @submit.prevent="onSearch">
-      <div>
-        <label for="check-in">{{ t('availability.checkIn') }}</label>
-        <input id="check-in" v-model="checkIn" type="date" required />
-      </div>
-      <div>
-        <label for="check-out">{{ t('availability.checkOut') }}</label>
-        <input id="check-out" v-model="checkOut" type="date" required />
-      </div>
-      <div>
-        <label for="guests">{{ t('availability.guests') }}</label>
-        <input id="guests" v-model.number="guests" type="number" min="1" required />
-      </div>
-      <button type="submit" :disabled="isSearching">{{ t('availability.search') }}</button>
-    </form>
+    <div class="mx-auto flex max-w-3xl flex-col items-center gap-8 px-4 pb-16 pt-4">
+      <h1 class="text-center text-2xl font-semibold text-neutral-800">
+        {{ t('availability.title') }}
+      </h1>
 
-    <p v-if="errorMessage" role="alert">{{ errorMessage }}</p>
+      <UCard class="w-full">
+        <form
+          class="grid grid-cols-1 gap-4 sm:grid-cols-4 sm:items-end"
+          @submit.prevent="onSearch"
+        >
+          <UFormField :label="t('availability.checkIn')" class="sm:col-span-1">
+            <UInput v-model="checkIn" type="date" required class="w-full" />
+          </UFormField>
+          <UFormField :label="t('availability.checkOut')" class="sm:col-span-1">
+            <UInput v-model="checkOut" type="date" required class="w-full" />
+          </UFormField>
+          <UFormField :label="t('availability.guests')" class="sm:col-span-1">
+            <UInputNumber v-model="guests" :min="1" class="w-full" />
+          </UFormField>
+          <UButton
+            type="submit"
+            block
+            size="lg"
+            :loading="isSearching"
+            :label="t('availability.search')"
+            class="sm:col-span-1"
+          />
+        </form>
+      </UCard>
 
-    <table v-if="results.length">
-      <thead>
-        <tr>
-          <th>{{ t('availability.table.apartment') }}</th>
-          <th>{{ t('availability.table.nights') }}</th>
-          <th>{{ t('availability.table.priceTotal') }}</th>
-          <th>{{ t('availability.table.available') }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="result in results" :key="result.apartment_id">
-          <td>{{ result.name }}</td>
-          <td>{{ result.nights }}</td>
-          <td>{{ result.price_total }} {{ result.currency }}</td>
-          <td>{{ t('availability.yes') }}</td>
-        </tr>
-      </tbody>
-    </table>
-    <p v-else-if="hasSearched && !errorMessage">{{ t('availability.noResults') }}</p>
+      <UAlert
+        v-if="errorMessage"
+        class="w-full"
+        color="error"
+        variant="soft"
+        :title="errorMessage"
+        role="alert"
+      />
+
+      <UCard v-if="results.length" class="w-full">
+        <UTable :data="results" :columns="columns">
+          <template #priceTotal-cell="{ row }">
+            {{ row.original.price_total }} {{ row.original.currency }}
+          </template>
+          <template #available-cell>
+            <UBadge color="success" :label="t('availability.yes')" />
+          </template>
+        </UTable>
+      </UCard>
+
+      <p v-else-if="hasSearched && !errorMessage" class="text-neutral-500">
+        {{ t('availability.noResults') }}
+      </p>
+    </div>
   </div>
 </template>

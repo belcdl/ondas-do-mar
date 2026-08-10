@@ -198,9 +198,9 @@ async function confirmDeactivate() {
 
 <template>
   <div>
-    <h2>{{ t('panelApartments.title') }}</h2>
+    <h2 class="text-xl font-semibold text-neutral-800">{{ t('panelApartments.title') }}</h2>
 
-    <p v-if="!owner">{{ t('panelApartments.noLinkedOwner') }}</p>
+    <p v-if="!owner" class="mt-4 text-neutral-500">{{ t('panelApartments.noLinkedOwner') }}</p>
 
     <template v-else>
       <div class="flex items-center justify-between gap-4 py-4">

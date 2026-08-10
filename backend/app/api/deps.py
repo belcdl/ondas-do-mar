@@ -4,15 +4,18 @@ from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import get_settings
 from app.core.exceptions import PermissionDeniedError
 from app.db.session import get_db
 from app.models.apartment import Apartment
+from app.models.apartment_photo import ApartmentPhoto
 from app.models.blocked_date import BlockedDate
 from app.models.booking import Booking
 from app.models.owner import Owner
 from app.models.rate_rule import RateRule
 from app.models.user import User, UserRole
 from app.repositories.apartment import ApartmentRepository
+from app.repositories.apartment_photo import ApartmentPhotoRepository
 from app.repositories.blocked_date import BlockedDateRepository
 from app.repositories.booking import BookingRepository
 from app.repositories.owner import OwnerRepository
@@ -21,6 +24,7 @@ from app.repositories.payment import PaymentRepository
 from app.repositories.rate_rule import RateRuleRepository
 from app.repositories.user import UserRepository
 from app.services.apartment import ApartmentService
+from app.services.apartment_photo import ApartmentPhotoService
 from app.services.availability import AvailabilityService
 from app.services.blocked_date import BlockedDateService
 from app.services.booking import BookingService
@@ -29,7 +33,7 @@ from app.services.payment import PaymentService
 from app.services.rate_rule import RateRuleService
 from app.services.user import AuthenticationError, UserService
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{get_settings().api_v1_str}/auth/login")
 
 
 def get_owner_repository(db: AsyncSession = Depends(get_db)) -> OwnerRepository:
@@ -88,6 +92,18 @@ def get_blocked_date_service(
     repository: BlockedDateRepository = Depends(get_blocked_date_repository),
 ) -> BlockedDateService:
     return BlockedDateService(repository)
+
+
+def get_apartment_photo_repository(
+    db: AsyncSession = Depends(get_db),
+) -> ApartmentPhotoRepository:
+    return ApartmentPhotoRepository(db)
+
+
+def get_apartment_photo_service(
+    repository: ApartmentPhotoRepository = Depends(get_apartment_photo_repository),
+) -> ApartmentPhotoService:
+    return ApartmentPhotoService(repository)
 
 
 def get_availability_service(
@@ -249,3 +265,20 @@ async def get_authorized_blocked_date(
     apartment = await apartment_service.get_apartment(blocked_date.apartment_id)
     authorize_owner_match(current_user, caller_owner, apartment.owner_id)
     return blocked_date
+
+
+async def get_authorized_apartment_photo(
+    photo_id: uuid.UUID,
+    current_user: User = Depends(get_current_active_user),
+    caller_owner: Owner | None = Depends(get_current_owner_or_none),
+    service: ApartmentPhotoService = Depends(get_apartment_photo_service),
+    apartment_service: ApartmentService = Depends(get_apartment_service),
+) -> ApartmentPhoto:
+    """Fetch-then-authorize for /apartments/{apartment_id}/photos/{photo_id}
+    routes. An apartment photo has no owner_id of its own, so authorization
+    is checked against its parent apartment's owner, same rule as rate rules
+    and blocked dates."""
+    photo = await service.get_photo(photo_id)
+    apartment = await apartment_service.get_apartment(photo.apartment_id)
+    authorize_owner_match(current_user, caller_owner, apartment.owner_id)
+    return photo

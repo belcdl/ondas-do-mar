@@ -11,6 +11,7 @@ from app.db.base import Base
 # from app.models import booking, apartment, user  # noqa: F401
 from app.models import (  # noqa: F401
     apartment,
+    apartment_photo,
     blocked_date,
     booking,
     owner,

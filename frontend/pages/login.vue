@@ -1,6 +1,15 @@
 <script setup lang="ts">
-const { login } = useAuth()
+const { login, fetchMe } = useAuth()
 const { t } = useI18n()
+
+// Landing here with an existing, still-valid token (e.g. the logo on a
+// public page links to "/", which redirects to /login regardless of auth
+// state) shouldn't show the form again — send an already-authenticated
+// owner straight to the panel instead.
+const existingUser = await fetchMe()
+if (existingUser) {
+  await navigateTo('/panel')
+}
 
 const email = ref('')
 const password = ref('')
@@ -22,26 +31,57 @@ async function onSubmit() {
 </script>
 
 <template>
-  <div>
-    <LocaleSwitcher />
-    <h1>{{ t('login.title') }}</h1>
-    <form @submit.prevent="onSubmit">
-      <div>
-        <label for="email">{{ t('login.email') }}</label>
-        <input id="email" v-model="email" type="email" autocomplete="username" required />
-      </div>
-      <div>
-        <label for="password">{{ t('login.password') }}</label>
-        <input
-          id="password"
-          v-model="password"
-          type="password"
-          autocomplete="current-password"
-          required
+  <div class="min-h-screen flex flex-col items-center justify-center gap-8 bg-neutral-50 px-4">
+    <div class="absolute top-4 right-4">
+      <LocaleSwitcher />
+    </div>
+
+    <AppLogo :height="72" />
+
+    <UCard class="w-full max-w-sm" :ui="{ body: 'flex flex-col gap-5' }">
+      <h1 class="text-center text-xl font-semibold text-neutral-800">
+        {{ t('login.title') }}
+      </h1>
+
+      <form class="flex flex-col gap-4" @submit.prevent="onSubmit">
+        <UFormField :label="t('login.email')" required>
+          <UInput
+            v-model="email"
+            type="email"
+            autocomplete="username"
+            required
+            icon="i-lucide-mail"
+            class="w-full"
+          />
+        </UFormField>
+
+        <UFormField :label="t('login.password')" required>
+          <UInput
+            v-model="password"
+            type="password"
+            autocomplete="current-password"
+            required
+            icon="i-lucide-lock"
+            class="w-full"
+          />
+        </UFormField>
+
+        <UAlert
+          v-if="errorMessage"
+          color="error"
+          variant="soft"
+          :title="errorMessage"
+          role="alert"
         />
-      </div>
-      <p v-if="errorMessage" role="alert">{{ errorMessage }}</p>
-      <button type="submit" :disabled="isSubmitting">{{ t('login.submit') }}</button>
-    </form>
+
+        <UButton
+          type="submit"
+          block
+          size="lg"
+          :loading="isSubmitting"
+          :label="t('login.submit')"
+        />
+      </form>
+    </UCard>
   </div>
 </template>

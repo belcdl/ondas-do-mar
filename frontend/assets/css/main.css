@@ -1,2 +1,56 @@
+/* Ondas do Mar brand type: Poppins for UI/headings (matches the logo's bold
+   geometric wordmark), Dancing Script only for small decorative accents
+   (the "Boutique Apartments" tagline style) — never for body text or form
+   controls, cursive scripts hurt readability at UI sizes.
+   Must be the very first statement in the file: @import "tailwindcss" and
+   @import "@nuxt/ui" below expand into a large block of generated CSS, and
+   once expanded, an @import placed after them is no longer "before all
+   other statements" in the final bundle — CSS requires @import rules to
+   precede everything except @charset. */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Dancing+Script:wght@600;700&display=swap");
 @import "tailwindcss";
 @import "@nuxt/ui";
+
+/* Brand palette lifted from the Ondas do Mar logo (ocean blue wave + sun
+   orange). Registered as Tailwind v4 theme colors so Nuxt UI's `primary`/
+   `secondary` tokens (and therefore every UButton/UInput/UBadge/etc. in the
+   app) resolve to the brand instead of Nuxt UI's stock "blue"/"green". */
+@theme static {
+  --color-brand-50: #eef6fc;
+  --color-brand-100: #d9eaf7;
+  --color-brand-200: #b8d7f0;
+  --color-brand-300: #8bbce5;
+  --color-brand-400: #5498d3;
+  --color-brand-500: #2472b8;
+  --color-brand-600: #1a5a97;
+  --color-brand-700: #17497a;
+  --color-brand-800: #173e65;
+  --color-brand-900: #163556;
+  --color-brand-950: #0e2137;
+
+  --color-sun-50: #fff7ed;
+  --color-sun-100: #ffedd3;
+  --color-sun-200: #ffd6a5;
+  --color-sun-300: #ffb765;
+  --color-sun-400: #fd9a3c;
+  --color-sun-500: #f5811a;
+  --color-sun-600: #e2650f;
+  --color-sun-700: #bb4d0f;
+  --color-sun-800: #953d14;
+  --color-sun-900: #793414;
+  --color-sun-950: #421806;
+
+  --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
+  --font-script: "Dancing Script", cursive;
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+/* Small reusable accent for the tagline-style script text (used next to the
+   logo, e.g. "Boutique Apartments"), kept out of component styling so it
+   stays an explicit opt-in rather than leaking into body copy. */
+.font-script {
+  font-family: var(--font-script);
+}

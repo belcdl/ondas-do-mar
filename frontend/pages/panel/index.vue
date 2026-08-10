@@ -3,10 +3,14 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div>
-    <p>
-      <NuxtLink to="/panel/apartments">{{ t('panel.apartmentsLink') }}</NuxtLink>
-    </p>
-    <p>{{ t('panel.placeholder') }}</p>
-  </div>
+  <UCard>
+    <div class="flex flex-col items-start gap-4">
+      <p class="text-neutral-600">{{ t('panel.placeholder') }}</p>
+      <UButton
+        to="/panel/apartments"
+        icon="i-lucide-building-2"
+        :label="t('panel.apartmentsLink')"
+      />
+    </div>
+  </UCard>
 </template>

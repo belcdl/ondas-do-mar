@@ -169,10 +169,12 @@ async function confirmDelete() {
 
 <template>
   <div>
-    <p>
-      <NuxtLink to="/panel/apartments">{{ t('panelRateRules.backLink') }}</NuxtLink>
-    </p>
-    <h2>{{ t('panelRateRules.title', { name: apartment.name }) }}</h2>
+    <NuxtLink to="/panel/apartments" class="text-sm text-brand-600 hover:underline">
+      {{ t('panelRateRules.backLink') }}
+    </NuxtLink>
+    <h2 class="mt-2 text-xl font-semibold text-neutral-800">
+      {{ t('panelRateRules.title', { name: apartment.name }) }}
+    </h2>
 
     <div class="flex items-center justify-end gap-4 py-4">
       <UButton :label="t('panelRateRules.newRule')" @click="openCreateForm" />
