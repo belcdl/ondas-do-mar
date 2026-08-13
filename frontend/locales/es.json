@@ -33,7 +33,8 @@
     "actions": {
       "edit": "Editar",
       "deactivate": "Desactivar",
-      "rateRules": "Temporadas"
+      "rateRules": "Temporadas",
+      "photos": "Fotos"
     },
     "form": {
       "createTitle": "Nuevo apartamento",
@@ -104,6 +105,28 @@
       "updateError": "No se pudo actualizar la temporada",
       "deleteSuccess": "Temporada borrada",
       "deleteError": "No se pudo borrar la temporada"
+    }
+  },
+  "panelPhotos": {
+    "title": "Fotos — {name}",
+    "backLink": "← Volver a mis apartamentos",
+    "empty": "Todavía no hay fotos para este apartamento.",
+    "upload": {
+      "button": "Subir foto",
+      "help": "JPEG, PNG o WEBP. Tamaño máximo: 8 MB. Máximo 20 fotos por apartamento."
+    },
+    "deleteConfirm": {
+      "title": "Borrar foto",
+      "message": "¿Seguro que quieres borrar esta foto? Esta acción no se puede deshacer.",
+      "confirm": "Borrar",
+      "cancel": "Cancelar"
+    },
+    "toast": {
+      "loadError": "No se pudieron cargar las fotos",
+      "uploadSuccess": "Foto subida",
+      "uploadError": "No se pudo subir la foto",
+      "deleteSuccess": "Foto borrada",
+      "deleteError": "No se pudo borrar la foto"
     }
   },
   "availability": {

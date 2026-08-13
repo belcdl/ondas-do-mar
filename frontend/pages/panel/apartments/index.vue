@@ -242,6 +242,12 @@ async function confirmDeactivate() {
               :to="`/panel/apartments/${row.original.id}/rate-rules`"
             />
             <UButton
+              size="sm"
+              variant="ghost"
+              :label="t('panelApartments.actions.photos')"
+              :to="`/panel/apartments/${row.original.id}/photos`"
+            />
+            <UButton
               v-if="row.original.is_active"
               size="sm"
               variant="ghost"

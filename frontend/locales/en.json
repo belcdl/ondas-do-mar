@@ -33,7 +33,8 @@
     "actions": {
       "edit": "Edit",
       "deactivate": "Deactivate",
-      "rateRules": "Rates"
+      "rateRules": "Rates",
+      "photos": "Photos"
     },
     "form": {
       "createTitle": "New apartment",
@@ -104,6 +105,28 @@
       "updateError": "Could not update the season",
       "deleteSuccess": "Season deleted",
       "deleteError": "Could not delete the season"
+    }
+  },
+  "panelPhotos": {
+    "title": "Photos — {name}",
+    "backLink": "← Back to my apartments",
+    "empty": "There are no photos for this apartment yet.",
+    "upload": {
+      "button": "Upload photo",
+      "help": "JPEG, PNG or WEBP. Maximum size: 8 MB. Maximum 20 photos per apartment."
+    },
+    "deleteConfirm": {
+      "title": "Delete photo",
+      "message": "Are you sure you want to delete this photo? This action cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "toast": {
+      "loadError": "Could not load photos",
+      "uploadSuccess": "Photo uploaded",
+      "uploadError": "Could not upload the photo",
+      "deleteSuccess": "Photo deleted",
+      "deleteError": "Could not delete the photo"
     }
   },
   "availability": {
