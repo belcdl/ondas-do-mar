@@ -1,6 +1,8 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
+
+from app.schemas.validators import validate_password_strength
 
 
 class OwnerInvitationCreated(BaseModel):
@@ -12,3 +14,5 @@ class AcceptInvitationRequest(BaseModel):
     token: str
     password: str
     full_name: str
+
+    _validate_password = field_validator("password")(validate_password_strength)

@@ -212,6 +212,20 @@ async def test_admin_reset_password_requires_token(client: AsyncClient) -> None:
     assert response.status_code == 401
 
 
+async def test_admin_reset_password_rejects_weak_password(
+    client: AsyncClient, db_session: AsyncSession
+) -> None:
+    admin = await _create_user(db_session, role=UserRole.ADMIN)
+    user = await _create_user(db_session)
+
+    response = await client.post(
+        "/api/v1/auth/admin/reset-password",
+        json={"email": user.email, "new_password": "short"},
+        headers=_auth_headers(admin),
+    )
+    assert response.status_code == 422
+
+
 async def test_admin_reset_password_unknown_email_returns_404(
     client: AsyncClient, db_session: AsyncSession
 ) -> None:

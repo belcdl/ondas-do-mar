@@ -81,9 +81,23 @@ async def test_accept_invitation_already_used_returns_409(
 
     second = await client.post(
         "/api/v1/auth/accept-invitation",
-        json={"token": token, "password": "AnotherPassword!", "full_name": "Real Name"},
+        json={"token": token, "password": "AnotherPassword1!", "full_name": "Real Name"},
     )
     assert second.status_code == 409
+
+
+async def test_accept_invitation_rejects_weak_password(
+    client: AsyncClient, admin_headers: dict[str, str]
+) -> None:
+    owner = await _create_owner(client, admin_headers)
+    invite_response = await client.post(f"/api/v1/owners/{owner['id']}/invite", headers=admin_headers)
+    token = _extract_token(invite_response.json()["invitation_link"])
+
+    response = await client.post(
+        "/api/v1/auth/accept-invitation",
+        json={"token": token, "password": "weakpassword", "full_name": "Real Name"},
+    )
+    assert response.status_code == 422
 
 
 async def test_full_invitation_flow_scopes_owner_correctly(

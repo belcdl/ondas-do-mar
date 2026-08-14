@@ -1,6 +1,7 @@
 import uuid
 
 import pytest
+from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import AuthenticationError, ConflictError
@@ -22,6 +23,21 @@ def _user_payload(**overrides: object) -> UserCreate:
     return UserCreate(**payload)
 
 
+def test_user_create_accepts_strong_password() -> None:
+    payload = _user_payload(password="Valid-Pass1!")
+    assert payload.password == "Valid-Pass1!"
+
+
+@pytest.mark.parametrize(
+    "password",
+    ["Short1!", "lowercase123!", "NoDigits!!", "NoSpecial123"],
+    ids=["too-short", "no-uppercase", "no-digit", "no-special-char"],
+)
+def test_user_create_rejects_weak_password(password: str) -> None:
+    with pytest.raises(ValidationError):
+        _user_payload(password=password)
+
+
 async def test_create_user_hashes_password(db_session: AsyncSession) -> None:
     service = UserService(UserRepository(db_session))
     user = await service.create_user(_user_payload())
@@ -39,8 +55,8 @@ async def test_create_user_duplicate_email_raises_conflict(db_session: AsyncSess
 
 async def test_authenticate_success(db_session: AsyncSession) -> None:
     service = UserService(UserRepository(db_session))
-    created = await service.create_user(_user_payload(password="correct-horse"))
-    authenticated = await service.authenticate(created.email, "correct-horse")
+    created = await service.create_user(_user_payload(password="Correct-Horse1!"))
+    authenticated = await service.authenticate(created.email, "Correct-Horse1!")
     assert authenticated.id == created.id
 
 
@@ -48,7 +64,7 @@ async def test_authenticate_wrong_password_raises_invalid_credentials(
     db_session: AsyncSession,
 ) -> None:
     service = UserService(UserRepository(db_session))
-    created = await service.create_user(_user_payload(password="correct-horse"))
+    created = await service.create_user(_user_payload(password="Correct-Horse1!"))
     with pytest.raises(InvalidCredentialsError):
         await service.authenticate(created.email, "wrong-password")
 
@@ -64,13 +80,13 @@ async def test_authenticate_nonexistent_email_raises_same_error(
 
 async def test_authenticate_inactive_user_raises_same_error(db_session: AsyncSession) -> None:
     service = UserService(UserRepository(db_session))
-    created = await service.create_user(_user_payload(password="correct-horse"))
+    created = await service.create_user(_user_payload(password="Correct-Horse1!"))
     created.is_active = False
     db_session.add(created)
     await db_session.commit()
 
     with pytest.raises(InvalidCredentialsError, match="Incorrect email or password"):
-        await service.authenticate(created.email, "correct-horse")
+        await service.authenticate(created.email, "Correct-Horse1!")
 
 
 async def test_get_user_from_token_success(db_session: AsyncSession) -> None:
@@ -96,7 +112,7 @@ async def test_get_user_from_token_unknown_user_raises(db_session: AsyncSession)
 
 async def test_reset_password_changes_the_stored_hash(db_session: AsyncSession) -> None:
     service = UserService(UserRepository(db_session))
-    created = await service.create_user(_user_payload(password="old-password"))
+    created = await service.create_user(_user_payload(password="Old-Password1!"))
     # SQLAlchemy's identity map means reset_password's get_by_email returns
     # this exact same object, not a fresh copy — capture the hash as a
     # plain string first so the "before" comparison isn't mutated in place
