@@ -34,6 +34,7 @@
       "edit": "Editar",
       "deactivate": "Desactivar",
       "rateRules": "Temporadas",
+      "calendar": "Calendario",
       "photos": "Fotos"
     },
     "form": {
@@ -105,6 +106,62 @@
       "updateError": "No se pudo actualizar la temporada",
       "deleteSuccess": "Temporada borrada",
       "deleteError": "No se pudo borrar la temporada"
+    }
+  },
+  "panelCalendar": {
+    "title": "Calendario — {name}",
+    "backLink": "← Volver a mis apartamentos",
+    "legend": {
+      "priced": "Con precio",
+      "blocked": "Bloqueado",
+      "booked": "Reservado",
+      "noPrice": "Los días en blanco no tienen precio y no aparecerán en las búsquedas de disponibilidad."
+    },
+    "tooltip": {
+      "pricePerNight": "{price} €/noche",
+      "booking": "{name} ({start} — {end})"
+    },
+    "rangeAction": {
+      "title": "Fechas seleccionadas: {start} — {end}",
+      "setPrice": "Fijar precio para estas fechas",
+      "block": "Bloquear estas fechas",
+      "cancel": "Cancelar"
+    },
+    "rateRuleForm": {
+      "createTitle": "Fijar precio",
+      "editTitle": "Editar temporada",
+      "startDate": "Fecha de inicio",
+      "endDate": "Fecha de fin",
+      "pricePerNight": "Precio por noche",
+      "minStay": "Estancia mínima (noches)",
+      "submit": "Guardar",
+      "cancel": "Cancelar",
+      "delete": "Borrar"
+    },
+    "blockedDateForm": {
+      "createTitle": "Bloquear fechas",
+      "editTitle": "Editar bloqueo",
+      "startDate": "Fecha de inicio",
+      "endDate": "Fecha de fin",
+      "reason": "Motivo (opcional)",
+      "submit": "Guardar",
+      "cancel": "Cancelar",
+      "delete": "Borrar"
+    },
+    "toast": {
+      "loadError": "No se pudieron cargar los datos del calendario",
+      "rateRuleCreateSuccess": "Precio fijado",
+      "rateRuleCreateError": "No se pudo fijar el precio",
+      "rateRuleUpdateSuccess": "Temporada actualizada",
+      "rateRuleUpdateError": "No se pudo actualizar la temporada",
+      "rateRuleDeleteSuccess": "Temporada borrada",
+      "rateRuleDeleteError": "No se pudo borrar la temporada",
+      "blockedDateCreateSuccess": "Fechas bloqueadas",
+      "blockedDateCreateError": "No se pudieron bloquear las fechas",
+      "blockedDateUpdateSuccess": "Bloqueo actualizado",
+      "blockedDateUpdateError": "No se pudo actualizar el bloqueo",
+      "blockedDateDeleteSuccess": "Bloqueo borrado",
+      "blockedDateDeleteError": "No se pudo borrar el bloqueo"
     }
   },
   "panelPhotos": {

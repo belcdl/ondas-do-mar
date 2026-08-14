@@ -56,7 +56,10 @@
       "Bash(git push *)",
       "Bash(uv --version)",
       "Bash(uv add *)",
-      "Bash(tee /tmp/typecheck.log)"
+      "Bash(tee /tmp/typecheck.log)",
+      "Bash(powershell.exe *)",
+      "Bash(node -e \"console.log\\(require\\('./package.json'\\).dependencies\\)\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const p=JSON.parse\\(d\\); console.log\\(JSON.stringify\\({main:p.main,module:p.module,exports:p.exports,style:p.style},null,2\\)\\)}\\)\")"
     ]
   }
 }

@@ -34,6 +34,7 @@
       "edit": "Edit",
       "deactivate": "Deactivate",
       "rateRules": "Rates",
+      "calendar": "Calendar",
       "photos": "Photos"
     },
     "form": {
@@ -105,6 +106,62 @@
       "updateError": "Could not update the season",
       "deleteSuccess": "Season deleted",
       "deleteError": "Could not delete the season"
+    }
+  },
+  "panelCalendar": {
+    "title": "Calendar — {name}",
+    "backLink": "← Back to my apartments",
+    "legend": {
+      "priced": "Priced",
+      "blocked": "Blocked",
+      "booked": "Booked",
+      "noPrice": "Blank days have no price and won't show up in availability searches."
+    },
+    "tooltip": {
+      "pricePerNight": "{price} €/night",
+      "booking": "{name} ({start} — {end})"
+    },
+    "rangeAction": {
+      "title": "Selected dates: {start} — {end}",
+      "setPrice": "Set price for these dates",
+      "block": "Block these dates",
+      "cancel": "Cancel"
+    },
+    "rateRuleForm": {
+      "createTitle": "Set price",
+      "editTitle": "Edit season",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "pricePerNight": "Price per night",
+      "minStay": "Minimum stay (nights)",
+      "submit": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "blockedDateForm": {
+      "createTitle": "Block dates",
+      "editTitle": "Edit block",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "reason": "Reason (optional)",
+      "submit": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "toast": {
+      "loadError": "Could not load the calendar data",
+      "rateRuleCreateSuccess": "Price set",
+      "rateRuleCreateError": "Could not set the price",
+      "rateRuleUpdateSuccess": "Season updated",
+      "rateRuleUpdateError": "Could not update the season",
+      "rateRuleDeleteSuccess": "Season deleted",
+      "rateRuleDeleteError": "Could not delete the season",
+      "blockedDateCreateSuccess": "Dates blocked",
+      "blockedDateCreateError": "Could not block the dates",
+      "blockedDateUpdateSuccess": "Block updated",
+      "blockedDateUpdateError": "Could not update the block",
+      "blockedDateDeleteSuccess": "Block deleted",
+      "blockedDateDeleteError": "Could not delete the block"
     }
   },
   "panelPhotos": {

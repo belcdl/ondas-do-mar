@@ -244,6 +244,12 @@ async function confirmDeactivate() {
             <UButton
               size="sm"
               variant="ghost"
+              :label="t('panelApartments.actions.calendar')"
+              :to="`/panel/apartments/${row.original.id}/calendar`"
+            />
+            <UButton
+              size="sm"
+              variant="ghost"
               :label="t('panelApartments.actions.photos')"
               :to="`/panel/apartments/${row.original.id}/photos`"
             />
