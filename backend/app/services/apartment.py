@@ -34,6 +34,8 @@ class ApartmentService:
             description=data.description,
             bedrooms=data.bedrooms,
             max_guests=data.max_guests,
+            amenities=[amenity.value for amenity in data.amenities],
+            amenities_other=data.amenities_other,
         )
         try:
             return await self.repository.create(apartment)
@@ -69,6 +71,11 @@ class ApartmentService:
             await ensure_owner_is_active(self.owner_repository, new_owner_id)
 
         for field, value in updates.items():
+            # model_dump() keeps AmenityType members as enum instances rather
+            # than plain strings — normalize to str for the ARRAY(String)
+            # column, same as create_apartment does for a fresh Apartment.
+            if field == "amenities" and value is not None:
+                value = [amenity.value for amenity in value]
             setattr(apartment, field, value)
 
         try:

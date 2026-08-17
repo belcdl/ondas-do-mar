@@ -187,3 +187,61 @@ async def test_deactivate_apartment_not_found(
 ) -> None:
     response = await client.post(f"/api/v1/apartments/{uuid.uuid4()}/deactivate", headers=admin_headers)
     assert response.status_code == 404
+
+
+async def test_create_apartment_with_amenities(
+    client: AsyncClient, admin_headers: dict[str, str]
+) -> None:
+    owner = await _create_owner(client, admin_headers)
+    apartment = await _create_apartment(
+        client,
+        admin_headers,
+        owner["id"],
+        amenities=["wifi", "tv"],
+        amenities_other="Portable air conditioning unit",
+    )
+    assert apartment["amenities"] == ["wifi", "tv"]
+    assert apartment["amenities_other"] == "Portable air conditioning unit"
+
+
+async def test_create_apartment_defaults_to_no_amenities(
+    client: AsyncClient, admin_headers: dict[str, str]
+) -> None:
+    owner = await _create_owner(client, admin_headers)
+    apartment = await _create_apartment(client, admin_headers, owner["id"])
+    assert apartment["amenities"] == []
+    assert apartment["amenities_other"] is None
+
+
+async def test_update_apartment_amenities(
+    client: AsyncClient, admin_headers: dict[str, str]
+) -> None:
+    owner = await _create_owner(client, admin_headers)
+    apartment = await _create_apartment(client, admin_headers, owner["id"], amenities=["wifi"])
+
+    response = await client.patch(
+        f"/api/v1/apartments/{apartment['id']}",
+        json={"amenities": ["pets_allowed", "terrace"]},
+        headers=admin_headers,
+    )
+    assert response.status_code == 200
+    assert response.json()["amenities"] == ["pets_allowed", "terrace"]
+
+
+async def test_create_apartment_invalid_amenity_returns_422(
+    client: AsyncClient, admin_headers: dict[str, str]
+) -> None:
+    owner = await _create_owner(client, admin_headers)
+    response = await client.post(
+        "/api/v1/apartments",
+        json={
+            "owner_id": owner["id"],
+            "name": "Casa Azul",
+            "address_line": "Rua da Praia 12",
+            "city": "Porto",
+            "country": "Portugal",
+            "amenities": ["not_a_real_amenity"],
+        },
+        headers=admin_headers,
+    )
+    assert response.status_code == 422

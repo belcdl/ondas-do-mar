@@ -1,9 +1,10 @@
+import enum
 import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Integer, String, Text, text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -15,6 +16,24 @@ if TYPE_CHECKING:
     from app.models.booking import Booking
     from app.models.owner import Owner
     from app.models.rate_rule import RateRule
+
+
+class AmenityType(str, enum.Enum):
+    WIFI = "wifi"
+    ELECTRIC_HEATING = "electric_heating"
+    FAN = "fan"
+    TV = "tv"
+    EQUIPPED_KITCHEN = "equipped_kitchen"
+    MICROWAVE = "microwave"
+    TOASTER = "toaster"
+    DISHWASHER = "dishwasher"
+    COFFEE_MAKER = "coffee_maker"
+    HAIR_DRYER = "hair_dryer"
+    TERRACE = "terrace"
+    ELEVATOR = "elevator"
+    PETS_ALLOWED = "pets_allowed"
+    NO_SMOKING = "no_smoking"
+    SHARED_LAUNDRY = "shared_laundry"
 
 
 class Apartment(Base):
@@ -42,6 +61,14 @@ class Apartment(Base):
     max_guests: Mapped[int] = mapped_column(
         Integer, nullable=False, default=4, server_default=text("4")
     )
+    # Values are AmenityType members, stored as plain strings — validated at
+    # the Pydantic schema layer (app.schemas.apartment) rather than with a
+    # DB-level CHECK, since Postgres has no simple native way to constrain
+    # every element of an array column against an enum.
+    amenities: Mapped[list[str]] = mapped_column(
+        ARRAY(String), nullable=False, default=list, server_default=text("'{}'")
+    )
+    amenities_other: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=True, server_default=text("true")
     )

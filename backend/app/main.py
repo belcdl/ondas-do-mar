@@ -1,7 +1,9 @@
 import logging
+from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -44,6 +46,9 @@ app.include_router(payments_router, prefix=settings.api_v1_str)
 app.include_router(auth_router, prefix=settings.api_v1_str)
 
 register_exception_handlers(app)
+
+Path(settings.media_root).mkdir(parents=True, exist_ok=True)
+app.mount("/media", StaticFiles(directory=settings.media_root), name="media")
 
 
 @app.get("/health")

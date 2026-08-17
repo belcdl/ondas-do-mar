@@ -3,6 +3,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.models.apartment import AmenityType
+
 
 class ApartmentBase(BaseModel):
     owner_id: uuid.UUID
@@ -14,6 +16,8 @@ class ApartmentBase(BaseModel):
     description: str | None = None
     bedrooms: int | None = None
     max_guests: int = Field(default=4, gt=0)
+    amenities: list[AmenityType] = Field(default_factory=list)
+    amenities_other: str | None = None
 
 
 class ApartmentCreate(ApartmentBase):
@@ -30,6 +34,8 @@ class ApartmentUpdate(BaseModel):
     description: str | None = None
     bedrooms: int | None = None
     max_guests: int | None = Field(default=None, gt=0)
+    amenities: list[AmenityType] | None = None
+    amenities_other: str | None = None
     is_active: bool | None = None
 
 

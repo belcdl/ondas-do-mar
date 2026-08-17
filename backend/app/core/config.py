@@ -23,11 +23,8 @@ class Settings(BaseSettings):
     stripe_publishable_key: str | None = None
     stripe_webhook_secret: str | None = None
 
-    r2_account_id: str | None = None
-    r2_access_key_id: str | None = None
-    r2_secret_access_key: str | None = None
-    r2_bucket_name: str | None = None
-    r2_public_base_url: str | None = None
+    media_root: str = "/app/media"
+    media_public_base_url: str = "http://localhost:8000/media"
 
 
 @lru_cache

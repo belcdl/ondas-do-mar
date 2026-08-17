@@ -1,8 +1,10 @@
 import uuid
 
 import pytest
+from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.apartment import AmenityType
 from app.repositories.apartment import ApartmentRepository
 from app.repositories.owner import OwnerRepository
 from app.repositories.owner_invitation import OwnerInvitationRepository
@@ -143,3 +145,73 @@ async def test_update_apartment_reassign_to_inactive_owner(db_session: AsyncSess
 
     with pytest.raises(InactiveOwnerError):
         await service.update_apartment(apartment.id, ApartmentUpdate(owner_id=owner_b.id))
+
+
+async def test_create_apartment_with_amenities(db_session: AsyncSession) -> None:
+    owner = await _make_owner(db_session)
+    service = _apartment_service(db_session)
+
+    created = await service.create_apartment(
+        ApartmentCreate(
+            owner_id=owner.id,
+            name="Casa Azul",
+            address_line="Rua da Praia 12",
+            city="Porto",
+            country="Portugal",
+            amenities=[AmenityType.WIFI, AmenityType.TV],
+            amenities_other="Portable air conditioning unit",
+        )
+    )
+    assert created.amenities == ["wifi", "tv"]
+    assert created.amenities_other == "Portable air conditioning unit"
+
+
+async def test_apartment_defaults_to_no_amenities(db_session: AsyncSession) -> None:
+    owner = await _make_owner(db_session)
+    service = _apartment_service(db_session)
+
+    created = await service.create_apartment(
+        ApartmentCreate(
+            owner_id=owner.id,
+            name="Casa Azul",
+            address_line="Rua da Praia 12",
+            city="Porto",
+            country="Portugal",
+        )
+    )
+    assert created.amenities == []
+    assert created.amenities_other is None
+
+
+async def test_update_apartment_amenities(db_session: AsyncSession) -> None:
+    owner = await _make_owner(db_session)
+    service = _apartment_service(db_session)
+
+    apartment = await service.create_apartment(
+        ApartmentCreate(
+            owner_id=owner.id,
+            name="Casa Azul",
+            address_line="Rua da Praia 12",
+            city="Porto",
+            country="Portugal",
+            amenities=[AmenityType.WIFI],
+        )
+    )
+
+    updated = await service.update_apartment(
+        apartment.id,
+        ApartmentUpdate(amenities=[AmenityType.PETS_ALLOWED, AmenityType.TERRACE]),
+    )
+    assert updated.amenities == ["pets_allowed", "terrace"]
+
+
+def test_apartment_create_rejects_invalid_amenity() -> None:
+    with pytest.raises(ValidationError):
+        ApartmentCreate(
+            owner_id=uuid.uuid4(),
+            name="Casa Azul",
+            address_line="Rua da Praia 12",
+            city="Porto",
+            country="Portugal",
+            amenities=["not_a_real_amenity"],
+        )
