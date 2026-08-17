@@ -46,3 +46,21 @@ class ApartmentRead(ApartmentBase):
     is_active: bool
     created_at: datetime
     updated_at: datetime
+
+
+class ApartmentPublicRead(BaseModel):
+    """Guest-facing apartment listing. Does not inherit from ApartmentBase —
+    owner_id must never be exposed here."""
+
+    id: uuid.UUID
+    name: str
+    description: str | None = None
+    address_line: str
+    city: str
+    postal_code: str | None = None
+    country: str
+    bedrooms: int | None = None
+    max_guests: int
+    amenities: list[AmenityType]
+    amenities_other: str | None = None
+    photos: list[str]

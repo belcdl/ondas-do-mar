@@ -1,5 +1,6 @@
 import uuid
 
+import pytest
 from httpx import AsyncClient
 
 
@@ -226,6 +227,57 @@ async def test_update_apartment_amenities(
     )
     assert response.status_code == 200
     assert response.json()["amenities"] == ["pets_allowed", "terrace"]
+
+
+async def test_get_apartment_public(
+    client: AsyncClient, admin_headers: dict[str, str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr("app.core.storage.upload_photo", lambda *args, **kwargs: None)
+    owner = await _create_owner(client, admin_headers)
+    apartment = await _create_apartment(
+        client, admin_headers, owner["id"], amenities=["wifi", "tv"]
+    )
+    photo_1 = await client.post(
+        f"/api/v1/apartments/{apartment['id']}/photos",
+        files={"file": ("a.jpg", b"fake-image-bytes-1", "image/jpeg")},
+        headers=admin_headers,
+    )
+    photo_2 = await client.post(
+        f"/api/v1/apartments/{apartment['id']}/photos",
+        files={"file": ("b.jpg", b"fake-image-bytes-2", "image/jpeg")},
+        headers=admin_headers,
+    )
+    assert photo_1.status_code == 201
+    assert photo_2.status_code == 201
+
+    response = await client.get(f"/api/v1/apartments/{apartment['id']}/public")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["id"] == apartment["id"]
+    assert body["name"] == apartment["name"]
+    assert body["address_line"] == apartment["address_line"]
+    assert body["city"] == apartment["city"]
+    assert body["country"] == apartment["country"]
+    assert body["amenities"] == ["wifi", "tv"]
+    assert body["photos"] == [photo_1.json()["url"], photo_2.json()["url"]]
+    assert "owner_id" not in body
+
+
+async def test_get_apartment_public_not_found(client: AsyncClient) -> None:
+    response = await client.get(f"/api/v1/apartments/{uuid.uuid4()}/public")
+    assert response.status_code == 404
+
+
+async def test_get_apartment_public_inactive_returns_404(
+    client: AsyncClient, admin_headers: dict[str, str]
+) -> None:
+    owner = await _create_owner(client, admin_headers)
+    apartment = await _create_apartment(client, admin_headers, owner["id"])
+    await client.post(f"/api/v1/apartments/{apartment['id']}/deactivate", headers=admin_headers)
+
+    response = await client.get(f"/api/v1/apartments/{apartment['id']}/public")
+    assert response.status_code == 404
 
 
 async def test_create_apartment_invalid_amenity_returns_422(

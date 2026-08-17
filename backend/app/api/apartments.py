@@ -1,7 +1,10 @@
+import uuid
+
 from fastapi import APIRouter, Depends, Query, status
 
 from app.api.deps import (
     authorize_owner_match,
+    get_apartment_photo_service,
     get_apartment_service,
     get_authorized_apartment,
     get_current_active_user,
@@ -11,8 +14,15 @@ from app.core.exceptions import PermissionDeniedError
 from app.models.apartment import Apartment
 from app.models.owner import Owner
 from app.models.user import User, UserRole
-from app.schemas.apartment import ApartmentCreate, ApartmentRead, ApartmentUpdate
-from app.services.apartment import ApartmentService
+from app.schemas.apartment import (
+    ApartmentCreate,
+    ApartmentPublicRead,
+    ApartmentRead,
+    ApartmentUpdate,
+)
+from app.schemas.apartment_photo import ApartmentPhotoRead
+from app.services.apartment import ApartmentNotFoundError, ApartmentService
+from app.services.apartment_photo import ApartmentPhotoService
 
 router = APIRouter(prefix="/apartments", tags=["apartments"])
 
@@ -47,6 +57,36 @@ async def list_apartments(
         return []
     return await service.list_apartments_by_owner(
         caller_owner.id, include_inactive=include_inactive
+    )
+
+
+@router.get("/{apartment_id}/public", response_model=ApartmentPublicRead)
+async def get_apartment_public(
+    apartment_id: uuid.UUID,
+    service: ApartmentService = Depends(get_apartment_service),
+    photo_service: ApartmentPhotoService = Depends(get_apartment_photo_service),
+) -> ApartmentPublicRead:
+    """Public apartment listing for guests, no authentication required. 404
+    if the apartment doesn't exist or isn't active — same status either way
+    so a deactivated listing's existence isn't revealed."""
+    apartment = await service.get_apartment(apartment_id)
+    if not apartment.is_active:
+        raise ApartmentNotFoundError(f"Apartment {apartment_id} not found")
+
+    photos = await photo_service.list_photos(apartment.id)
+    return ApartmentPublicRead(
+        id=apartment.id,
+        name=apartment.name,
+        description=apartment.description,
+        address_line=apartment.address_line,
+        city=apartment.city,
+        postal_code=apartment.postal_code,
+        country=apartment.country,
+        bedrooms=apartment.bedrooms,
+        max_guests=apartment.max_guests,
+        amenities=apartment.amenities,
+        amenities_other=apartment.amenities_other,
+        photos=[ApartmentPhotoRead.model_validate(photo).url for photo in photos],
     )
 
 
