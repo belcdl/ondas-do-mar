@@ -231,5 +231,21 @@
     "maxGuestsLabel": "Huéspedes máximos",
     "amenitiesTitle": "Comodidades",
     "reserveButton": "Reservar"
+  },
+  "bookingForm": {
+    "apartmentNotFound": "No se ha encontrado el apartamento.",
+    "checkIn": "Fecha de entrada",
+    "checkOut": "Fecha de salida",
+    "guests": "Huéspedes",
+    "checkAvailability": "Comprobar disponibilidad",
+    "notAvailable": "No hay disponibilidad para esas fechas.",
+    "nights": "Noches",
+    "totalPrice": "Precio total",
+    "fullName": "Nombre completo",
+    "email": "Correo electrónico",
+    "phone": "Teléfono",
+    "submit": "Confirmar y pagar",
+    "conflictError": "Esas fechas ya no están disponibles. Por favor, vuelve a comprobar la disponibilidad.",
+    "submitError": "No se pudo completar la reserva"
   }
 }

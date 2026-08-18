@@ -231,5 +231,21 @@
     "maxGuestsLabel": "Max guests",
     "amenitiesTitle": "Amenities",
     "reserveButton": "Book now"
+  },
+  "bookingForm": {
+    "apartmentNotFound": "Apartment not found.",
+    "checkIn": "Check-in date",
+    "checkOut": "Check-out date",
+    "guests": "Guests",
+    "checkAvailability": "Check availability",
+    "notAvailable": "Not available for those dates.",
+    "nights": "Nights",
+    "totalPrice": "Total price",
+    "fullName": "Full name",
+    "email": "Email",
+    "phone": "Phone",
+    "submit": "Confirm and pay",
+    "conflictError": "Those dates are no longer available. Please check availability again.",
+    "submitError": "Could not complete the booking"
   }
 }
