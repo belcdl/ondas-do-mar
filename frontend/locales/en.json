@@ -12,6 +12,23 @@
     "apartmentsLink": "View my apartments",
     "placeholder": "Rate and booking management will be available in a future iteration."
   },
+  "amenities": {
+    "wifi": "Wifi",
+    "electric_heating": "Electric heating",
+    "fan": "Fan",
+    "tv": "TV",
+    "equipped_kitchen": "Equipped kitchen",
+    "microwave": "Microwave",
+    "toaster": "Toaster",
+    "dishwasher": "Dishwasher",
+    "coffee_maker": "Coffee maker",
+    "hair_dryer": "Hair dryer",
+    "terrace": "Terrace",
+    "elevator": "Elevator",
+    "pets_allowed": "Pets allowed",
+    "no_smoking": "No smoking",
+    "shared_laundry": "Shared laundry room"
+  },
   "panelApartments": {
     "title": "My apartments",
     "newApartment": "New apartment",
@@ -48,8 +65,13 @@
       "description": "Description",
       "bedrooms": "Bedrooms",
       "maxGuests": "Max guests",
+      "amenities": "Amenities",
       "submit": "Save",
       "cancel": "Cancel"
+    },
+    "amenitiesOther": {
+      "label": "Other amenities",
+      "placeholder": "Add anything else not covered above"
     },
     "deactivateConfirm": {
       "title": "Deactivate apartment",
@@ -199,7 +221,15 @@
       "available": "Available"
     },
     "yes": "Yes",
+    "viewListing": "View listing",
     "noResults": "No apartments available for those dates.",
     "error": "Search failed. Please try again."
+  },
+  "publicApartment": {
+    "notFound": "Apartment not found.",
+    "bedroomsLabel": "Bedrooms",
+    "maxGuestsLabel": "Max guests",
+    "amenitiesTitle": "Amenities",
+    "reserveButton": "Book now"
   }
 }

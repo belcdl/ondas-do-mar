@@ -14,6 +14,8 @@ interface Apartment {
   description: string | null
   bedrooms: number | null
   max_guests: number
+  amenities: string[]
+  amenities_other: string | null
   is_active: boolean
   created_at: string
   updated_at: string
@@ -28,6 +30,8 @@ interface ApartmentFormState {
   description: string | null
   bedrooms: number | null
   max_guests: number | null
+  amenities: string[]
+  amenities_other: string | null
 }
 
 const api = useApi()
@@ -95,6 +99,8 @@ function emptyForm(): ApartmentFormState {
     description: null,
     bedrooms: null,
     max_guests: 4,
+    amenities: [],
+    amenities_other: null,
   }
 }
 
@@ -123,8 +129,18 @@ function openEditForm(apartment: Apartment) {
     description: apartment.description,
     bedrooms: apartment.bedrooms,
     max_guests: apartment.max_guests,
+    amenities: [...apartment.amenities],
+    amenities_other: apartment.amenities_other,
   })
   isFormOpen.value = true
+}
+
+function toggleAmenity(amenity: string, checked: boolean | 'indeterminate') {
+  if (checked === true) {
+    if (!form.amenities.includes(amenity)) form.amenities.push(amenity)
+  } else {
+    form.amenities = form.amenities.filter((value) => value !== amenity)
+  }
 }
 
 async function onSubmitForm() {
@@ -294,6 +310,25 @@ async function confirmDeactivate() {
             </UFormField>
             <UFormField :label="t('panelApartments.form.maxGuests')">
               <UInputNumber v-model="form.max_guests" :min="1" class="w-full" />
+            </UFormField>
+            <UFormField :label="t('panelApartments.form.amenities')">
+              <div class="grid grid-cols-2 gap-2">
+                <UCheckbox
+                  v-for="amenity in AMENITY_TYPES"
+                  :key="amenity"
+                  :model-value="form.amenities.includes(amenity)"
+                  :label="t(`amenities.${amenity}`)"
+                  @update:model-value="toggleAmenity(amenity, $event)"
+                />
+              </div>
+            </UFormField>
+            <UFormField :label="t('panelApartments.amenitiesOther.label')">
+              <UTextarea
+                v-model="form.amenities_other"
+                :rows="2"
+                :placeholder="t('panelApartments.amenitiesOther.placeholder')"
+                class="w-full"
+              />
             </UFormField>
           </form>
         </template>

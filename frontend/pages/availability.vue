@@ -52,6 +52,7 @@ const columns: TableColumn<AvailabilityResult>[] = [
   { accessorKey: 'nights', header: t('availability.table.nights') },
   { id: 'priceTotal', header: t('availability.table.priceTotal') },
   { id: 'available', header: t('availability.table.available') },
+  { id: 'viewListing', header: '' },
 ]
 </script>
 
@@ -108,6 +109,14 @@ const columns: TableColumn<AvailabilityResult>[] = [
           </template>
           <template #available-cell>
             <UBadge color="success" :label="t('availability.yes')" />
+          </template>
+          <template #viewListing-cell="{ row }">
+            <UButton
+              size="sm"
+              variant="ghost"
+              :label="t('availability.viewListing')"
+              :to="`/apartamentos/${row.original.apartment_id}`"
+            />
           </template>
         </UTable>
       </UCard>

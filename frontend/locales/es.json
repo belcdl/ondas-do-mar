@@ -12,6 +12,23 @@
     "apartmentsLink": "Ver mis apartamentos",
     "placeholder": "La gestión de tarifas y reservas estará disponible en una próxima iteración."
   },
+  "amenities": {
+    "wifi": "Wifi",
+    "electric_heating": "Calefacción eléctrica",
+    "fan": "Ventilador",
+    "tv": "TV",
+    "equipped_kitchen": "Cocina equipada",
+    "microwave": "Microondas",
+    "toaster": "Tostadora",
+    "dishwasher": "Lavavajillas",
+    "coffee_maker": "Cafetera",
+    "hair_dryer": "Secador de pelo",
+    "terrace": "Terraza",
+    "elevator": "Ascensor",
+    "pets_allowed": "Se admiten mascotas",
+    "no_smoking": "No fumadores",
+    "shared_laundry": "Zona de lavadoras compartida"
+  },
   "panelApartments": {
     "title": "Mis apartamentos",
     "newApartment": "Nuevo apartamento",
@@ -48,8 +65,13 @@
       "description": "Descripción",
       "bedrooms": "Habitaciones",
       "maxGuests": "Huéspedes máximos",
+      "amenities": "Comodidades",
       "submit": "Guardar",
       "cancel": "Cancelar"
+    },
+    "amenitiesOther": {
+      "label": "Otras comodidades",
+      "placeholder": "Añade aquí cualquier otra comodidad que no aparezca en la lista"
     },
     "deactivateConfirm": {
       "title": "Desactivar apartamento",
@@ -199,7 +221,15 @@
       "available": "Disponible"
     },
     "yes": "Sí",
+    "viewListing": "Ver ficha",
     "noResults": "No hay apartamentos disponibles para esas fechas.",
     "error": "No se pudo completar la búsqueda. Inténtalo de nuevo."
+  },
+  "publicApartment": {
+    "notFound": "No se ha encontrado el apartamento.",
+    "bedroomsLabel": "Habitaciones",
+    "maxGuestsLabel": "Huéspedes máximos",
+    "amenitiesTitle": "Comodidades",
+    "reserveButton": "Reservar"
   }
 }
