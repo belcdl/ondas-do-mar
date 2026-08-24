@@ -11,6 +11,12 @@ class Settings(BaseSettings):
     api_v1_str: str = "/api/v1"
 
     database_url: str = "postgresql+psycopg://ondas:ondas_dev_password@localhost:5432/ondas_do_mar"
+    # Dedicated database the test suite provisions and migrates itself (see
+    # tests/conftest.py) — kept separate from database_url so pytest never
+    # shares state with whatever's sitting in the dev database.
+    test_database_url: str = (
+        "postgresql+psycopg://ondas:ondas_dev_password@localhost:5432/ondas_do_mar_test"
+    )
     backend_cors_origins: list[str] = ["http://localhost:5173"]
     frontend_base_url: str = "http://localhost:5173"
 

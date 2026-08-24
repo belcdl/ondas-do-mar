@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from app.models.apartment_photo import ApartmentPhoto
     from app.models.blocked_date import BlockedDate
     from app.models.booking import Booking
+    from app.models.ical_source import IcalSource
     from app.models.owner import Owner
     from app.models.rate_rule import RateRule
 
@@ -84,3 +85,4 @@ class Apartment(Base):
     rate_rules: Mapped[list["RateRule"]] = relationship(back_populates="apartment")
     blocked_dates: Mapped[list["BlockedDate"]] = relationship(back_populates="apartment")
     photos: Mapped[list["ApartmentPhoto"]] = relationship(back_populates="apartment")
+    ical_sources: Mapped[list["IcalSource"]] = relationship(back_populates="apartment")

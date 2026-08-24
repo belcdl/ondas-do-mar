@@ -14,6 +14,7 @@ from app.models import (  # noqa: F401
     apartment_photo,
     blocked_date,
     booking,
+    ical_source,
     owner,
     owner_invitation,
     payment,
@@ -23,7 +24,11 @@ from app.models import (  # noqa: F401
 
 config = context.config
 settings = get_settings()
-config.set_main_option("sqlalchemy.url", settings.database_url)
+# Only default to the dev database if the Config passed in doesn't already
+# carry a URL — tests/conftest.py builds its own Config pointed at
+# test_database_url and needs that to survive this, not get overwritten.
+if not config.get_main_option("sqlalchemy.url"):
+    config.set_main_option("sqlalchemy.url", settings.database_url)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)

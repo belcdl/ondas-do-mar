@@ -2,7 +2,7 @@ import uuid
 from datetime import date, datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import CheckConstraint, Date, DateTime, ForeignKey, String, column, text
+from sqlalchemy import CheckConstraint, Date, DateTime, ForeignKey, Index, String, column, text
 from sqlalchemy.dialects.postgresql import UUID, ExcludeConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
@@ -28,6 +28,17 @@ class BlockedDate(Base):
             using="gist",
             name="ex_blocked_dates_no_overlap",
         ),
+        # Prevents importing the same external VEVENT twice for a given
+        # source. Partial (only when ical_source_id IS NOT NULL) so it never
+        # applies to manually-created blocked dates, which always have both
+        # columns NULL.
+        Index(
+            "ix_blocked_dates_ical_source_id_external_uid",
+            "ical_source_id",
+            "external_uid",
+            unique=True,
+            postgresql_where=text("ical_source_id IS NOT NULL"),
+        ),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -42,6 +53,16 @@ class BlockedDate(Base):
     start_date: Mapped[date] = mapped_column(Date, nullable=False)
     end_date: Mapped[date] = mapped_column(Date, nullable=False)
     reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # Both NULL for manually-created blocks. Set together when a block is
+    # imported from an external iCal feed (step 2) — external_uid is the
+    # source VEVENT's UID, used to match it back up on later syncs.
+    ical_source_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("ical_sources.id", ondelete="CASCADE"),
+        nullable=True,
+        index=True,
+    )
+    external_uid: Mapped[str | None] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

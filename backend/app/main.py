@@ -14,6 +14,8 @@ from app.api.auth import router as auth_router
 from app.api.availability import router as availability_router
 from app.api.blocked_dates import router as blocked_dates_router
 from app.api.bookings import router as bookings_router
+from app.api.ical_export import router as ical_export_router
+from app.api.ical_sources import router as ical_sources_router
 from app.api.owners import router as owners_router
 from app.api.payments import router as payments_router
 from app.api.rate_rules import router as rate_rules_router
@@ -41,6 +43,8 @@ app.include_router(bookings_router, prefix=settings.api_v1_str)
 app.include_router(rate_rules_router, prefix=settings.api_v1_str)
 app.include_router(blocked_dates_router, prefix=settings.api_v1_str)
 app.include_router(apartment_photos_router, prefix=settings.api_v1_str)
+app.include_router(ical_sources_router, prefix=settings.api_v1_str)
+app.include_router(ical_export_router, prefix=settings.api_v1_str)
 app.include_router(availability_router, prefix=settings.api_v1_str)
 app.include_router(payments_router, prefix=settings.api_v1_str)
 app.include_router(auth_router, prefix=settings.api_v1_str)

@@ -74,7 +74,9 @@
       "Bash(/c/Users/bel/AppData/Roaming/Python/Python313/Scripts/uv.exe add *)",
       "Bash(\"/c/Users/bel/AppData/Roaming/Python/Python313/Scripts/uv.exe\" run *)",
       "Bash(git stash *)",
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "Bash(xargs grep -H \"^revision\\\\|^down_revision\")",
+      "Bash(PGPASSWORD=ondas_dev_password \"/c/Program Files/PostgreSQL/16/bin/psql.exe\" -h localhost -U ondas -d ondas_do_mar -c \"SELECT name FROM apartments;\")"
     ]
   }
 }

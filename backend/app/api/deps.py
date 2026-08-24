@@ -11,6 +11,7 @@ from app.models.apartment import Apartment
 from app.models.apartment_photo import ApartmentPhoto
 from app.models.blocked_date import BlockedDate
 from app.models.booking import Booking
+from app.models.ical_source import IcalSource
 from app.models.owner import Owner
 from app.models.rate_rule import RateRule
 from app.models.user import User, UserRole
@@ -18,6 +19,7 @@ from app.repositories.apartment import ApartmentRepository
 from app.repositories.apartment_photo import ApartmentPhotoRepository
 from app.repositories.blocked_date import BlockedDateRepository
 from app.repositories.booking import BookingRepository
+from app.repositories.ical_source import IcalSourceRepository
 from app.repositories.owner import OwnerRepository
 from app.repositories.owner_invitation import OwnerInvitationRepository
 from app.repositories.payment import PaymentRepository
@@ -28,6 +30,8 @@ from app.services.apartment_photo import ApartmentPhotoService
 from app.services.availability import AvailabilityService
 from app.services.blocked_date import BlockedDateService
 from app.services.booking import BookingService
+from app.services.ical_export import IcalExportService
+from app.services.ical_source import IcalSourceService
 from app.services.owner import OwnerService
 from app.services.payment import PaymentService
 from app.services.rate_rule import RateRuleService
@@ -104,6 +108,23 @@ def get_apartment_photo_service(
     repository: ApartmentPhotoRepository = Depends(get_apartment_photo_repository),
 ) -> ApartmentPhotoService:
     return ApartmentPhotoService(repository)
+
+
+def get_ical_source_repository(db: AsyncSession = Depends(get_db)) -> IcalSourceRepository:
+    return IcalSourceRepository(db)
+
+
+def get_ical_source_service(
+    repository: IcalSourceRepository = Depends(get_ical_source_repository),
+) -> IcalSourceService:
+    return IcalSourceService(repository)
+
+
+def get_ical_export_service(
+    booking_repository: BookingRepository = Depends(get_booking_repository),
+    blocked_date_repository: BlockedDateRepository = Depends(get_blocked_date_repository),
+) -> IcalExportService:
+    return IcalExportService(booking_repository, blocked_date_repository)
 
 
 def get_availability_service(
@@ -265,6 +286,23 @@ async def get_authorized_blocked_date(
     apartment = await apartment_service.get_apartment(blocked_date.apartment_id)
     authorize_owner_match(current_user, caller_owner, apartment.owner_id)
     return blocked_date
+
+
+async def get_authorized_ical_source(
+    ical_source_id: uuid.UUID,
+    current_user: User = Depends(get_current_active_user),
+    caller_owner: Owner | None = Depends(get_current_owner_or_none),
+    service: IcalSourceService = Depends(get_ical_source_service),
+    apartment_service: ApartmentService = Depends(get_apartment_service),
+) -> IcalSource:
+    """Fetch-then-authorize for /ical-sources/{ical_source_id} routes. An
+    iCal source has no owner_id of its own, so authorization is checked
+    against its parent apartment's owner, same rule as rate rules and
+    blocked dates."""
+    ical_source = await service.get_ical_source(ical_source_id)
+    apartment = await apartment_service.get_apartment(ical_source.apartment_id)
+    authorize_owner_match(current_user, caller_owner, apartment.owner_id)
+    return ical_source
 
 
 async def get_authorized_apartment_photo(
