@@ -22,6 +22,7 @@ dist-ssr/
 
 # --- Docker / data ---
 docker/postgres/data/
+backend/media/
 
 # --- IDE ---
 .vscode/

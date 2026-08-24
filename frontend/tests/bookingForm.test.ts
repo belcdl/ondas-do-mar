@@ -107,6 +107,27 @@ describe('apartamentos/[id]/reservar page', () => {
     expect(component.find('input[type="email"]').exists()).toBe(false)
   })
 
+  it('does not call the API and shows an error toast when guest phone is empty', async () => {
+    const component = await mountWithApartment()
+
+    mockApi.mockResolvedValueOnce([AVAILABILITY_RESULT]) // GET /availability/search
+    component.setupState.checkIn.value = '2026-09-01'
+    component.setupState.checkOut.value = '2026-09-04'
+    component.setupState.guests.value = 2
+    await component.setupState.onCheckAvailability()
+
+    component.setupState.guestFullName.value = 'Jane Doe'
+    component.setupState.guestEmail.value = 'jane@example.com'
+    component.setupState.guestPhone.value = ''
+    await component.setupState.onSubmitBooking()
+
+    expect(mockApi).toHaveBeenCalledTimes(2) // only the public-apartment GET and availability search
+    expect(mockToastAdd).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Phone is required' }),
+    )
+    expect(mockNavigateTo).not.toHaveBeenCalled()
+  })
+
   it('shows a conflict message and hides the guest form again on a 409 from POST /bookings', async () => {
     const component = await mountWithApartment()
 
@@ -123,6 +144,7 @@ describe('apartamentos/[id]/reservar page', () => {
 
     component.setupState.guestFullName.value = 'Jane Doe'
     component.setupState.guestEmail.value = 'jane@example.com'
+    component.setupState.guestPhone.value = '+34600000000'
     await component.setupState.onSubmitBooking()
 
     expect(component.text()).toContain('Those dates are no longer available. Please check availability again.')

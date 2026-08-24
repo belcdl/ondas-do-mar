@@ -1,7 +1,10 @@
+import io
+import logging
 import uuid
 
 import pytest
 from httpx import AsyncClient, Response
+from PIL import Image
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import UserRole
@@ -110,6 +113,8 @@ async def _upload_photo(
 async def test_upload_apartment_photo(
     client: AsyncClient, admin_headers: dict[str, str], fake_r2: _FakeR2
 ) -> None:
+    """The fake bytes here aren't a decodable image, so this exercises the
+    WebP-conversion fallback path and keeps the original .jpg extension."""
     owner = await _create_owner(client, admin_headers)
     apartment = await _create_apartment(client, admin_headers, owner["id"])
 
@@ -123,6 +128,42 @@ async def test_upload_apartment_photo(
     assert "url" in body
     assert "storage_key" not in body
     assert len(fake_r2.uploaded) == 1
+    assert fake_r2.uploaded[0]["key"].endswith(".jpg")
+
+
+async def test_upload_apartment_photo_converts_real_image_to_webp(
+    client: AsyncClient, admin_headers: dict[str, str], fake_r2: _FakeR2
+) -> None:
+    owner = await _create_owner(client, admin_headers)
+    apartment = await _create_apartment(client, admin_headers, owner["id"])
+
+    buffer = io.BytesIO()
+    Image.new("RGB", (10, 10), color="red").save(buffer, format="JPEG")
+
+    response = await _upload_photo(
+        client, admin_headers, apartment["id"], content=buffer.getvalue()
+    )
+
+    assert response.status_code == 201
+    assert fake_r2.uploaded[0]["key"].endswith(".webp")
+    assert fake_r2.uploaded[0]["content_type"] == "image/webp"
+
+
+async def test_upload_apartment_photo_conversion_failure_falls_back_to_original(
+    client: AsyncClient,
+    admin_headers: dict[str, str],
+    fake_r2: _FakeR2,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    owner = await _create_owner(client, admin_headers)
+    apartment = await _create_apartment(client, admin_headers, owner["id"])
+
+    with caplog.at_level(logging.WARNING):
+        response = await _upload_photo(client, admin_headers, apartment["id"])
+
+    assert response.status_code == 201
+    assert fake_r2.uploaded[0]["key"].endswith(".jpg")
+    assert any("WebP" in record.getMessage() for record in caplog.records)
 
 
 async def test_upload_apartment_photo_requires_auth(client: AsyncClient) -> None:

@@ -1,8 +1,10 @@
 import io
+import logging
 import uuid
 
 import pytest
 from fastapi import UploadFile
+from PIL import Image
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.datastructures import Headers
 
@@ -103,6 +105,9 @@ def _patch_r2(monkeypatch: pytest.MonkeyPatch) -> _FakeR2:
 async def test_upload_photo_success(
     db_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """The fake bytes here aren't a decodable image, so this exercises the
+    WebP-conversion fallback path: Pillow fails to decode them and the
+    original bytes/content_type/extension are kept."""
     owner = await _make_owner(db_session)
     apartment = await _make_apartment(db_session, owner.id)
     fake = _patch_r2(monkeypatch)
@@ -117,6 +122,44 @@ async def test_upload_photo_success(
     assert len(fake.uploaded) == 1
     assert fake.uploaded[0]["key"] == photo.storage_key
     assert fake.uploaded[0]["content_type"] == "image/jpeg"
+
+
+async def test_upload_photo_converts_real_image_to_webp(
+    db_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    owner = await _make_owner(db_session)
+    apartment = await _make_apartment(db_session, owner.id)
+    fake = _patch_r2(monkeypatch)
+    service = _apartment_photo_service(db_session)
+
+    buffer = io.BytesIO()
+    Image.new("RGB", (10, 10), color="red").save(buffer, format="JPEG")
+
+    photo = await service.upload_photo(apartment.id, _upload_file(content=buffer.getvalue()))
+
+    assert photo.storage_key.endswith(".webp")
+    assert fake.uploaded[0]["content_type"] == "image/webp"
+
+
+async def test_upload_photo_conversion_failure_falls_back_to_original(
+    db_session: AsyncSession,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    owner = await _make_owner(db_session)
+    apartment = await _make_apartment(db_session, owner.id)
+    fake = _patch_r2(monkeypatch)
+    service = _apartment_photo_service(db_session)
+
+    with caplog.at_level(logging.WARNING):
+        photo = await service.upload_photo(apartment.id, _upload_file())
+
+    assert photo.storage_key.endswith(".jpg")
+    assert fake.uploaded[0]["content_type"] == "image/jpeg"
+    assert any(
+        "WebP" in record.getMessage() and str(apartment.id) in record.getMessage()
+        for record in caplog.records
+    )
 
 
 async def test_upload_photo_positions_increment(

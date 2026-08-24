@@ -1,6 +1,7 @@
 import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import PublicApartmentPage from '../pages/apartamentos/[id].vue'
+import { nextTick } from 'vue'
+import PublicApartmentPage from '../pages/apartamentos/[id]/index.vue'
 
 const { mockApi } = vi.hoisted(() => ({
   mockApi: vi.fn(),
@@ -58,5 +59,43 @@ describe('apartamentos/[id] public page', () => {
     const component = await mountSuspended(PublicApartmentPage)
 
     expect(component.text()).toContain('Apartment not found.')
+  })
+
+  it('opens the lightbox on the clicked photo, shown uncropped', async () => {
+    mockApi.mockResolvedValueOnce(PUBLIC_APARTMENT)
+
+    const component = await mountSuspended(PublicApartmentPage)
+
+    await component.find(`img[src="${PUBLIC_APARTMENT.photos[0]}"]`).trigger('click')
+
+    expect(component.setupState.isLightboxOpen.value).toBe(true)
+    expect(component.setupState.lightboxIndex.value).toBe(0)
+    expect(
+      document.querySelector(`img.object-contain[src="${PUBLIC_APARTMENT.photos[0]}"]`),
+    ).not.toBeNull()
+
+    // The dialog teleports to document.body — unmount so it doesn't leak
+    // into other tests in this file that also query document.body.
+    component.unmount()
+  })
+
+  it('advances to the next photo when clicking the next button in the lightbox', async () => {
+    mockApi.mockResolvedValueOnce(PUBLIC_APARTMENT)
+
+    const component = await mountSuspended(PublicApartmentPage)
+
+    await component.find(`img[src="${PUBLIC_APARTMENT.photos[0]}"]`).trigger('click')
+
+    const nextButton = document.querySelector('button[aria-label="Next photo"]') as HTMLButtonElement | null
+    expect(nextButton).not.toBeNull()
+    nextButton!.click()
+    await nextTick()
+
+    expect(component.setupState.lightboxIndex.value).toBe(1)
+    expect(
+      document.querySelector(`img.object-contain[src="${PUBLIC_APARTMENT.photos[1]}"]`),
+    ).not.toBeNull()
+
+    component.unmount()
   })
 })

@@ -230,7 +230,11 @@
     "bedroomsLabel": "Habitaciones",
     "maxGuestsLabel": "Huéspedes máximos",
     "amenitiesTitle": "Comodidades",
-    "reserveButton": "Reservar"
+    "reserveButton": "Reservar",
+    "lightbox": {
+      "previous": "Foto anterior",
+      "next": "Foto siguiente"
+    }
   },
   "bookingForm": {
     "apartmentNotFound": "No se ha encontrado el apartamento.",
@@ -241,11 +245,22 @@
     "notAvailable": "No hay disponibilidad para esas fechas.",
     "nights": "Noches",
     "totalPrice": "Precio total",
+    "summaryTitle": "Resumen de tu reserva",
+    "checkInLabel": "Entrada",
+    "checkOutLabel": "Salida",
+    "guestsLabel": "Huéspedes",
     "fullName": "Nombre completo",
     "email": "Correo electrónico",
     "phone": "Teléfono",
+    "phoneRequired": "El teléfono es obligatorio",
     "submit": "Confirmar y pagar",
     "conflictError": "Esas fechas ya no están disponibles. Por favor, vuelve a comprobar la disponibilidad.",
     "submitError": "No se pudo completar la reserva"
+  },
+  "bookingConfirmed": {
+    "title": "¡Reserva confirmada!",
+    "notFound": "No se ha encontrado la reserva.",
+    "confirmationCodeLabel": "Código de confirmación",
+    "apartmentFallback": "tu apartamento"
   }
 }

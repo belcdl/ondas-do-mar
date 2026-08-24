@@ -23,6 +23,26 @@ const { t } = useI18n()
 const apartment = ref<PublicApartment | null>(null)
 const notFound = ref(false)
 
+const isLightboxOpen = ref(false)
+const lightboxIndex = ref(0)
+
+function openLightbox(index: number) {
+  lightboxIndex.value = index
+  isLightboxOpen.value = true
+}
+
+function showPrevLightboxPhoto() {
+  if (!apartment.value) return
+  const total = apartment.value.photos.length
+  lightboxIndex.value = (lightboxIndex.value - 1 + total) % total
+}
+
+function showNextLightboxPhoto() {
+  if (!apartment.value) return
+  const total = apartment.value.photos.length
+  lightboxIndex.value = (lightboxIndex.value + 1) % total
+}
+
 // GET .../public is unauthenticated and 404s for a missing or deactivated
 // apartment (see api/apartments.py's get_apartment_public) — that's an
 // expected outcome for a guest following a stale or mistyped link, not an
@@ -48,27 +68,63 @@ try {
 
       <template v-else-if="apartment">
         <div class="mb-6">
-          <img
+          <UCarousel
             v-if="apartment.photos.length"
-            :src="apartment.photos[0]"
-            :alt="apartment.name"
-            class="h-80 w-full rounded-lg object-cover"
-          />
+            :items="apartment.photos"
+            dots
+            arrows
+            class="w-full"
+          >
+            <template #default="{ item, index }">
+              <img
+                :src="item"
+                :alt="apartment.name"
+                class="h-80 w-full cursor-pointer rounded-lg object-cover"
+                @click="openLightbox(index)"
+              />
+            </template>
+          </UCarousel>
           <div
             v-else
             class="flex h-80 w-full items-center justify-center rounded-lg bg-neutral-200"
           />
-
-          <div v-if="apartment.photos.length > 1" class="mt-2 grid grid-cols-4 gap-2">
-            <img
-              v-for="photo in apartment.photos.slice(1)"
-              :key="photo"
-              :src="photo"
-              :alt="apartment.name"
-              class="h-20 w-full rounded object-cover"
-            />
-          </div>
         </div>
+
+        <UModal
+          v-model:open="isLightboxOpen"
+          fullscreen
+          :ui="{ content: 'bg-black', close: 'text-white hover:bg-white/10', body: 'flex h-full items-center justify-center p-0 sm:p-0' }"
+        >
+          <template #body>
+            <div class="relative flex h-full w-full items-center justify-center">
+              <UButton
+                v-if="apartment.photos.length > 1"
+                icon="i-lucide-chevron-left"
+                color="neutral"
+                variant="ghost"
+                size="xl"
+                class="absolute left-4 text-white hover:bg-white/10"
+                :aria-label="t('publicApartment.lightbox.previous')"
+                @click="showPrevLightboxPhoto"
+              />
+              <img
+                :src="apartment.photos[lightboxIndex]"
+                :alt="apartment.name"
+                class="max-h-full max-w-full object-contain"
+              />
+              <UButton
+                v-if="apartment.photos.length > 1"
+                icon="i-lucide-chevron-right"
+                color="neutral"
+                variant="ghost"
+                size="xl"
+                class="absolute right-4 text-white hover:bg-white/10"
+                :aria-label="t('publicApartment.lightbox.next')"
+                @click="showNextLightboxPhoto"
+              />
+            </div>
+          </template>
+        </UModal>
 
         <h1 class="text-2xl font-semibold text-neutral-800">{{ apartment.name }}</h1>
         <p class="text-neutral-500">{{ apartment.city }}, {{ apartment.country }}</p>

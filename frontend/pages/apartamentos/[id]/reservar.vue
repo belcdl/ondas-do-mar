@@ -82,6 +82,14 @@ const showConflictError = ref(false)
 async function onSubmitBooking() {
   if (!availabilityResult.value) return
 
+  if (!guestPhone.value) {
+    toast.add({
+      title: t('bookingForm.phoneRequired'),
+      color: 'error',
+    })
+    return
+  }
+
   showConflictError.value = false
   isSubmittingBooking.value = true
   try {
@@ -176,6 +184,18 @@ async function onSubmitBooking() {
         </p>
 
         <UCard v-if="availabilityResult">
+          <h2 class="text-lg font-medium text-neutral-800">
+            {{ t('bookingForm.summaryTitle') }}
+          </h2>
+          <p class="text-neutral-700">
+            {{ t('bookingForm.checkInLabel') }}: {{ checkIn }}
+          </p>
+          <p class="text-neutral-700">
+            {{ t('bookingForm.checkOutLabel') }}: {{ checkOut }}
+          </p>
+          <p class="text-neutral-700">
+            {{ t('bookingForm.guestsLabel') }}: {{ guests }}
+          </p>
           <p class="text-neutral-700">
             {{ t('bookingForm.nights') }}: {{ availabilityResult.nights }}
           </p>
@@ -191,8 +211,8 @@ async function onSubmitBooking() {
             <UFormField :label="t('bookingForm.email')" required>
               <UInput v-model="guestEmail" type="email" required class="w-full" />
             </UFormField>
-            <UFormField :label="t('bookingForm.phone')">
-              <UInput v-model="guestPhone" class="w-full" />
+            <UFormField :label="t('bookingForm.phone')" required>
+              <UInput v-model="guestPhone" required type="tel" class="w-full" />
             </UFormField>
             <UButton
               type="submit"

@@ -230,7 +230,11 @@
     "bedroomsLabel": "Bedrooms",
     "maxGuestsLabel": "Max guests",
     "amenitiesTitle": "Amenities",
-    "reserveButton": "Book now"
+    "reserveButton": "Book now",
+    "lightbox": {
+      "previous": "Previous photo",
+      "next": "Next photo"
+    }
   },
   "bookingForm": {
     "apartmentNotFound": "Apartment not found.",
@@ -241,11 +245,22 @@
     "notAvailable": "Not available for those dates.",
     "nights": "Nights",
     "totalPrice": "Total price",
+    "summaryTitle": "Your booking summary",
+    "checkInLabel": "Check-in",
+    "checkOutLabel": "Check-out",
+    "guestsLabel": "Guests",
     "fullName": "Full name",
     "email": "Email",
     "phone": "Phone",
+    "phoneRequired": "Phone is required",
     "submit": "Confirm and pay",
     "conflictError": "Those dates are no longer available. Please check availability again.",
     "submitError": "Could not complete the booking"
+  },
+  "bookingConfirmed": {
+    "title": "Booking confirmed!",
+    "notFound": "Booking not found.",
+    "confirmationCodeLabel": "Confirmation code",
+    "apartmentFallback": "your apartment"
   }
 }

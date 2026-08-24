@@ -1,8 +1,10 @@
+import io
 import logging
 import uuid
 
 from fastapi import UploadFile
 from fastapi.concurrency import run_in_threadpool
+from PIL import Image, ImageFilter
 
 from app.core import storage
 from app.core.exceptions import BusinessRuleError, NotFoundError, ValidationError
@@ -20,6 +22,8 @@ _CONTENT_TYPE_EXTENSIONS = {
     "image/png": "png",
     "image/webp": "webp",
 }
+
+_MAX_DIMENSION_PX = 2000
 
 
 class ApartmentPhotoNotFoundError(NotFoundError):
@@ -61,11 +65,31 @@ class ApartmentPhotoService:
                 f"An apartment can have at most {_MAX_PHOTOS_PER_APARTMENT} photos"
             )
 
+        upload_bytes = file_bytes
+        content_type = file.content_type
         extension = _CONTENT_TYPE_EXTENSIONS[file.content_type]
+        try:
+            image = Image.open(io.BytesIO(file_bytes))
+            image.load()
+            if max(image.size) > _MAX_DIMENSION_PX:
+                image.thumbnail((_MAX_DIMENSION_PX, _MAX_DIMENSION_PX), Image.LANCZOS)
+            image = image.filter(
+                ImageFilter.UnsharpMask(radius=1.5, percent=60, threshold=3)
+            )
+            webp_buffer = io.BytesIO()
+            image.save(webp_buffer, format="WEBP", quality=82, method=6)
+            upload_bytes = webp_buffer.getvalue()
+            content_type = "image/webp"
+            extension = "webp"
+        except Exception as exc:
+            logger.warning(
+                "Could not convert apartment %s photo to WebP, uploading original file: %s",
+                apartment_id,
+                exc,
+            )
+
         key = f"apartments/{apartment_id}/{uuid.uuid4()}.{extension}"
-        await run_in_threadpool(
-            storage.upload_photo, file_bytes, key, file.content_type
-        )
+        await run_in_threadpool(storage.upload_photo, upload_bytes, key, content_type)
 
         photo = ApartmentPhoto(
             apartment_id=apartment_id,
