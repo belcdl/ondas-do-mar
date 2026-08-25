@@ -3,10 +3,12 @@ from fastapi import APIRouter, Depends, status
 from app.api.deps import (
     get_authorized_apartment,
     get_authorized_ical_source,
+    get_blocked_date_repository,
     get_ical_source_service,
 )
 from app.models.apartment import Apartment
 from app.models.ical_source import IcalSource
+from app.repositories.blocked_date import BlockedDateRepository
 from app.schemas.ical_source import (
     IcalSourceBase,
     IcalSourceCreate,
@@ -14,6 +16,7 @@ from app.schemas.ical_source import (
     IcalSourceUpdate,
 )
 from app.services.ical_source import IcalSourceService
+from app.services.ical_sync import sync_source
 
 router = APIRouter(tags=["ical-sources"])
 
@@ -67,3 +70,16 @@ async def delete_ical_source(
     """Delete an iCal source. Cascades to delete any BlockedDate rows
     imported from it (FK ondelete=CASCADE on blocked_dates.ical_source_id)."""
     await service.delete_ical_source(ical_source.id)
+
+
+@router.post("/ical-sources/{ical_source_id}/sync-now", response_model=IcalSourceRead)
+async def sync_ical_source_now(
+    ical_source: IcalSource = Depends(get_authorized_ical_source),
+    blocked_date_repository: BlockedDateRepository = Depends(get_blocked_date_repository),
+) -> IcalSource:
+    """Runs the same reconciliation the scheduled job (app/core/scheduler.py)
+    runs periodically, immediately — for testing a newly-added source
+    without waiting for the next scheduled tick. Never returns an error for
+    a fetch/parse failure; check the response's last_sync_error instead."""
+    await sync_source(ical_source, blocked_date_repository)
+    return ical_source

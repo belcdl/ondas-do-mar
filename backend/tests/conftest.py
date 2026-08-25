@@ -1,10 +1,17 @@
 import asyncio
+import os
 import sys
 import uuid
 from pathlib import Path
 
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+# Must be set before app.core.config.get_settings() is ever called (below,
+# and transitively by `from app.main import app`) — it's what tells
+# app.main's lifespan not to start the iCal sync scheduler, which would
+# otherwise fire real network requests on a timer during the suite.
+os.environ.setdefault("ENVIRONMENT", "test")
 
 import pytest
 import pytest_asyncio

@@ -1,4 +1,6 @@
 import logging
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException
@@ -19,6 +21,7 @@ from app.api.ical_sources import router as ical_sources_router
 from app.api.owners import router as owners_router
 from app.api.payments import router as payments_router
 from app.api.rate_rules import router as rate_rules_router
+from app.core import scheduler
 from app.core.config import get_settings
 from app.core.exceptions import register_exception_handlers
 from app.db.session import get_db
@@ -27,7 +30,20 @@ logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
-app = FastAPI(title=settings.project_name)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    # Never start the background sync job under pytest — it would fire real
+    # network requests on a timer during the suite. environment == "test" is
+    # set in tests/conftest.py before this module is ever imported.
+    if settings.environment != "test":
+        scheduler.start()
+    yield
+    if settings.environment != "test":
+        scheduler.shutdown()
+
+
+app = FastAPI(title=settings.project_name, lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

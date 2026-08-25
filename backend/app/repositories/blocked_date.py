@@ -53,6 +53,14 @@ class BlockedDateRepository:
         result = await self.db.execute(stmt)
         return result.scalars().all()
 
+    async def list_by_ical_source(self, ical_source_id: uuid.UUID) -> Sequence[BlockedDate]:
+        """BlockedDate rows previously imported from a given IcalSource —
+        used by ical_sync.sync_source to reconcile against the feed's
+        current VEVENTs."""
+        stmt = select(BlockedDate).where(BlockedDate.ical_source_id == ical_source_id)
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
+
     async def update(self, blocked_date: BlockedDate) -> BlockedDate:
         try:
             await self.db.commit()

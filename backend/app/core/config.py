@@ -32,6 +32,10 @@ class Settings(BaseSettings):
     media_root: str = "/app/media"
     media_public_base_url: str = "http://localhost:8000/media"
 
+    # How often the background job re-reads every IcalSource's feed and
+    # reconciles it into BlockedDate rows (app/core/scheduler.py).
+    ical_sync_interval_hours: int = 3
+
 
 @lru_cache
 def get_settings() -> Settings:
