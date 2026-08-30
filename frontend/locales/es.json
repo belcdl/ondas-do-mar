@@ -52,7 +52,8 @@
       "deactivate": "Desactivar",
       "rateRules": "Temporadas",
       "calendar": "Calendario",
-      "photos": "Fotos"
+      "photos": "Fotos",
+      "ical": "iCal"
     },
     "form": {
       "createTitle": "Nuevo apartamento",
@@ -262,5 +263,52 @@
     "notFound": "No se ha encontrado la reserva.",
     "confirmationCodeLabel": "Código de confirmación",
     "apartmentFallback": "tu apartamento"
+  },
+  "panelIcal": {
+    "title": "Sincronización iCal — {name}",
+    "backLink": "← Volver a mis apartamentos",
+    "exportSectionTitle": "Exporta tu calendario",
+    "exportUrlLabel": "URL de exportación",
+    "exportUrlNote": "Pega esta URL en la sección de sincronización de calendarios de Booking.com o Airbnb para mantenerlos al día con tus reservas y bloqueos.",
+    "copyButton": "Copiar",
+    "copiedToast": "URL copiada al portapapeles",
+    "addSource": "Añadir fuente",
+    "never": "Nunca",
+    "statusOk": "OK",
+    "statusError": "Error",
+    "syncNow": "Sincronizar ahora",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "table": {
+      "platform": "Plataforma",
+      "lastSynced": "Última sincronización",
+      "status": "Estado",
+      "actions": "Acciones"
+    },
+    "form": {
+      "platformLabel": "Nombre de la plataforma",
+      "urlLabel": "URL iCal",
+      "createTitle": "Añadir fuente iCal",
+      "editTitle": "Editar fuente iCal",
+      "submit": "Guardar",
+      "cancel": "Cancelar"
+    },
+    "deleteConfirm": {
+      "title": "Eliminar fuente iCal",
+      "message": "¿Seguro que quieres eliminar esta fuente iCal? También se eliminarán los bloqueos importados desde ella. Esta acción no se puede deshacer.",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar"
+    },
+    "toast": {
+      "loadError": "No se pudieron cargar las fuentes iCal",
+      "createSuccess": "Fuente iCal añadida",
+      "createError": "No se pudo añadir la fuente iCal",
+      "updateSuccess": "Fuente iCal actualizada",
+      "updateError": "No se pudo actualizar la fuente iCal",
+      "deleteSuccess": "Fuente iCal eliminada",
+      "deleteError": "No se pudo eliminar la fuente iCal",
+      "syncSuccess": "Sincronización completada",
+      "syncError": "No se pudo sincronizar esta fuente"
+    }
   }
 }

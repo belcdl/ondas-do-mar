@@ -52,7 +52,8 @@
       "deactivate": "Deactivate",
       "rateRules": "Rates",
       "calendar": "Calendar",
-      "photos": "Photos"
+      "photos": "Photos",
+      "ical": "iCal"
     },
     "form": {
       "createTitle": "New apartment",
@@ -262,5 +263,52 @@
     "notFound": "Booking not found.",
     "confirmationCodeLabel": "Confirmation code",
     "apartmentFallback": "your apartment"
+  },
+  "panelIcal": {
+    "title": "iCal sync — {name}",
+    "backLink": "← Back to my apartments",
+    "exportSectionTitle": "Export your calendar",
+    "exportUrlLabel": "Export URL",
+    "exportUrlNote": "Paste this URL into Booking.com's or Airbnb's calendar sync section to keep them up to date with your bookings and blocked dates.",
+    "copyButton": "Copy",
+    "copiedToast": "URL copied to clipboard",
+    "addSource": "Add source",
+    "never": "Never",
+    "statusOk": "OK",
+    "statusError": "Error",
+    "syncNow": "Sync now",
+    "edit": "Edit",
+    "delete": "Delete",
+    "table": {
+      "platform": "Platform",
+      "lastSynced": "Last synced",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "form": {
+      "platformLabel": "Platform name",
+      "urlLabel": "iCal URL",
+      "createTitle": "Add iCal source",
+      "editTitle": "Edit iCal source",
+      "submit": "Save",
+      "cancel": "Cancel"
+    },
+    "deleteConfirm": {
+      "title": "Delete iCal source",
+      "message": "Are you sure you want to delete this iCal source? Any blocked dates imported from it will also be removed. This action cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "toast": {
+      "loadError": "Could not load iCal sources",
+      "createSuccess": "iCal source added",
+      "createError": "Could not add the iCal source",
+      "updateSuccess": "iCal source updated",
+      "updateError": "Could not update the iCal source",
+      "deleteSuccess": "iCal source deleted",
+      "deleteError": "Could not delete the iCal source",
+      "syncSuccess": "Sync completed",
+      "syncError": "Could not sync this source"
+    }
   }
 }
