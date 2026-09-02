@@ -1,0 +1,14 @@
+# Normalize line endings to LF for all text files, regardless of what the
+# checking-out OS/editor would otherwise use — this project runs inside
+# Linux containers (Docker) and mixes Windows and non-Windows contributors,
+# so a single canonical line ending avoids "every line changed" diffs that
+# are really just CRLF vs LF noise.
+* text=auto eol=lf
+
+# Known binary types — never touch their line endings.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.pdf binary

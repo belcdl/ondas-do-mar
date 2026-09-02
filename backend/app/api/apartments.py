@@ -60,19 +60,9 @@ async def list_apartments(
     )
 
 
-@router.get("/{apartment_id}/public", response_model=ApartmentPublicRead)
-async def get_apartment_public(
-    apartment_id: uuid.UUID,
-    service: ApartmentService = Depends(get_apartment_service),
-    photo_service: ApartmentPhotoService = Depends(get_apartment_photo_service),
+async def _build_apartment_public_read(
+    apartment: Apartment, photo_service: ApartmentPhotoService
 ) -> ApartmentPublicRead:
-    """Public apartment listing for guests, no authentication required. 404
-    if the apartment doesn't exist or isn't active — same status either way
-    so a deactivated listing's existence isn't revealed."""
-    apartment = await service.get_apartment(apartment_id)
-    if not apartment.is_active:
-        raise ApartmentNotFoundError(f"Apartment {apartment_id} not found")
-
     photos = await photo_service.list_photos(apartment.id)
     return ApartmentPublicRead(
         id=apartment.id,
@@ -88,6 +78,35 @@ async def get_apartment_public(
         amenities_other=apartment.amenities_other,
         photos=[ApartmentPhotoRead.model_validate(photo).url for photo in photos],
     )
+
+
+@router.get("/public", response_model=list[ApartmentPublicRead])
+async def list_apartments_public(
+    service: ApartmentService = Depends(get_apartment_service),
+    photo_service: ApartmentPhotoService = Depends(get_apartment_photo_service),
+) -> list[ApartmentPublicRead]:
+    """Public apartment listing for guests, no authentication required.
+    Only active apartments, ordered by name."""
+    apartments = await service.list_apartments(include_inactive=False)
+    return [
+        await _build_apartment_public_read(apartment, photo_service) for apartment in apartments
+    ]
+
+
+@router.get("/{apartment_id}/public", response_model=ApartmentPublicRead)
+async def get_apartment_public(
+    apartment_id: uuid.UUID,
+    service: ApartmentService = Depends(get_apartment_service),
+    photo_service: ApartmentPhotoService = Depends(get_apartment_photo_service),
+) -> ApartmentPublicRead:
+    """Public apartment listing for guests, no authentication required. 404
+    if the apartment doesn't exist or isn't active — same status either way
+    so a deactivated listing's existence isn't revealed."""
+    apartment = await service.get_apartment(apartment_id)
+    if not apartment.is_active:
+        raise ApartmentNotFoundError(f"Apartment {apartment_id} not found")
+
+    return await _build_apartment_public_read(apartment, photo_service)
 
 
 @router.get("/{apartment_id}", response_model=ApartmentRead)

@@ -77,7 +77,11 @@
       "Bash(python3 -c ' *)",
       "Bash(xargs grep -H \"^revision\\\\|^down_revision\")",
       "Bash(PGPASSWORD=ondas_dev_password \"/c/Program Files/PostgreSQL/16/bin/psql.exe\" -h localhost -U ondas -d ondas_do_mar -c \"SELECT name FROM apartments;\")",
-      "Bash(/c/Users/bel/AppData/Roaming/Python/Python313/Scripts/uv.exe run python -c ' *)"
+      "Bash(/c/Users/bel/AppData/Roaming/Python/Python313/Scripts/uv.exe run python -c ' *)",
+      "Read(//c/Users/bel/.cargo/**)",
+      "Read(//c//**)",
+      "PowerShell(Get-Service *)",
+      "Bash(\"/c/Program Files/Docker/Docker/Docker Desktop.exe\")"
     ]
   }
 }

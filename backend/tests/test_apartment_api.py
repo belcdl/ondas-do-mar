@@ -280,6 +280,51 @@ async def test_get_apartment_public_inactive_returns_404(
     assert response.status_code == 404
 
 
+async def test_list_apartments_public(
+    client: AsyncClient, admin_headers: dict[str, str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr("app.core.storage.upload_photo", lambda *args, **kwargs: None)
+    owner = await _create_owner(client, admin_headers)
+    apartment_b = await _create_apartment(client, admin_headers, owner["id"], name="Casa Beta")
+    apartment_a = await _create_apartment(client, admin_headers, owner["id"], name="Casa Alfa")
+    inactive_apartment = await _create_apartment(
+        client, admin_headers, owner["id"], name="Casa Gamma"
+    )
+    await client.post(
+        f"/api/v1/apartments/{inactive_apartment['id']}/deactivate", headers=admin_headers
+    )
+
+    photo = await client.post(
+        f"/api/v1/apartments/{apartment_a['id']}/photos",
+        files={"file": ("a.jpg", b"fake-image-bytes", "image/jpeg")},
+        headers=admin_headers,
+    )
+    assert photo.status_code == 201
+
+    response = await client.get("/api/v1/apartments/public")
+
+    assert response.status_code == 200
+    body = response.json()
+    ids = [a["id"] for a in body]
+    assert apartment_a["id"] in ids
+    assert apartment_b["id"] in ids
+    assert inactive_apartment["id"] not in ids
+
+    names = [a["name"] for a in body]
+    assert names == sorted(names)
+
+    result_a = next(a for a in body if a["id"] == apartment_a["id"])
+    assert result_a["photos"] == [photo.json()["url"]]
+    for apartment in body:
+        assert "owner_id" not in apartment
+
+
+async def test_list_apartments_public_empty(client: AsyncClient) -> None:
+    response = await client.get("/api/v1/apartments/public")
+    assert response.status_code == 200
+    assert response.json() == []
+
+
 async def test_create_apartment_invalid_amenity_returns_422(
     client: AsyncClient, admin_headers: dict[str, str]
 ) -> None:
