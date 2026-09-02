@@ -3,15 +3,16 @@ definePageMeta({ middleware: 'auth' })
 
 const { fetchMe, logout } = useAuth()
 const { t } = useI18n()
+const localePath = useLocalePath()
 
 const user = await fetchMe()
 if (!user) {
-  await navigateTo('/login')
+  await navigateTo(localePath('/login'))
 }
 
 async function onLogout() {
   await logout()
-  await navigateTo('/login')
+  await navigateTo(localePath('/login'))
 }
 </script>
 

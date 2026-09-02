@@ -19,11 +19,11 @@ withDefaults(
 </script>
 
 <template>
-  <NuxtLink :to="to" class="inline-flex items-center" aria-label="Ondas do Mar">
+  <NuxtLinkLocale :to="to" class="inline-flex items-center" aria-label="Ondas do Mar">
     <img
       src="/logo.jpg"
       alt="Ondas do Mar — Boutique Apartments"
       :style="{ height: `${height}px`, width: 'auto' }"
     />
-  </NuxtLink>
+  </NuxtLinkLocale>
 </template>

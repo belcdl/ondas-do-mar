@@ -81,7 +81,11 @@
       "Read(//c/Users/bel/.cargo/**)",
       "Read(//c//**)",
       "PowerShell(Get-Service *)",
-      "Bash(\"/c/Program Files/Docker/Docker/Docker Desktop.exe\")"
+      "Bash(\"/c/Program Files/Docker/Docker/Docker Desktop.exe\")",
+      "Bash(xargs grep -ln \"I18nHeadOptions\")",
+      "Bash(git mv *)",
+      "Bash(npm test *)",
+      "Bash(taskkill //F //IM node.exe)"
     ]
   }
 }

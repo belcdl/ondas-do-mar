@@ -36,6 +36,7 @@ interface ApartmentFormState {
 
 const api = useApi()
 const { t } = useI18n()
+const localePath = useLocalePath()
 const toast = useToast()
 const { fetchOwner } = useOwner()
 
@@ -255,25 +256,25 @@ async function confirmDeactivate() {
               size="sm"
               variant="ghost"
               :label="t('panelApartments.actions.rateRules')"
-              :to="`/panel/apartments/${row.original.id}/rate-rules`"
+              :to="localePath(`/panel/apartments/${row.original.id}/rate-rules`)"
             />
             <UButton
               size="sm"
               variant="ghost"
               :label="t('panelApartments.actions.calendar')"
-              :to="`/panel/apartments/${row.original.id}/calendar`"
+              :to="localePath(`/panel/apartments/${row.original.id}/calendar`)"
             />
             <UButton
               size="sm"
               variant="ghost"
               :label="t('panelApartments.actions.photos')"
-              :to="`/panel/apartments/${row.original.id}/photos`"
+              :to="localePath(`/panel/apartments/${row.original.id}/photos`)"
             />
             <UButton
               size="sm"
               variant="ghost"
               :label="t('panelApartments.actions.ical')"
-              :to="`/panel/apartments/${row.original.id}/ical`"
+              :to="localePath(`/panel/apartments/${row.original.id}/ical`)"
             />
             <UButton
               v-if="row.original.is_active"

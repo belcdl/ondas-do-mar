@@ -19,6 +19,14 @@ const apartmentId = route.params.id as string
 
 const api = useApi()
 const { t } = useI18n()
+const localePath = useLocalePath()
+
+const i18nHead = useLocaleHead()
+useHead(() => ({
+  htmlAttrs: { lang: i18nHead.value.htmlAttrs?.lang },
+  link: [...(i18nHead.value.link || [])],
+  meta: [...(i18nHead.value.meta || [])],
+}))
 
 const apartment = ref<PublicApartment | null>(null)
 const notFound = ref(false)
@@ -160,7 +168,7 @@ try {
           size="xl"
           class="mt-8"
           :label="t('publicApartment.reserveButton')"
-          :to="`/apartamentos/${apartment.id}/reservar`"
+          :to="localePath(`/apartamentos/${apartment.id}/reservar`)"
         />
       </template>
     </div>

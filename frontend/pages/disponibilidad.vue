@@ -18,6 +18,7 @@ interface AvailabilityResult {
 
 const api = useApi()
 const { t } = useI18n()
+const localePath = useLocalePath()
 
 const checkIn = ref('')
 const checkOut = ref('')
@@ -115,7 +116,7 @@ const columns: TableColumn<AvailabilityResult>[] = [
               size="sm"
               variant="ghost"
               :label="t('availability.viewListing')"
-              :to="`/apartamentos/${row.original.apartment_id}`"
+              :to="localePath(`/apartamentos/${row.original.apartment_id}`)"
             />
           </template>
         </UTable>

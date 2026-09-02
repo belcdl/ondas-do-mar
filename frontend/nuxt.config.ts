@@ -59,11 +59,15 @@ export default defineNuxtConfig({
     restructureDir: false,
     langDir: 'locales/',
     locales: [
-      { code: 'es', name: 'Español', file: 'es.json' },
-      { code: 'en', name: 'English', file: 'en.json' },
+      { code: 'es', language: 'es', name: 'Español', file: 'es.json' },
+      { code: 'en', language: 'en', name: 'English', file: 'en.json' },
     ],
     defaultLocale: 'es',
-    strategy: 'no_prefix',
+    // prefix_except_default (not no_prefix): each locale must resolve to a
+    // distinct URL (/ vs /en/...) so Google can index them separately —
+    // no_prefix serves every locale at the same URL, which is unindexable
+    // per-language and would have meant reworking every internal link later.
+    strategy: 'prefix_except_default',
     bundle: {
       optimizeTranslationDirective: false,
     },

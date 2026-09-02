@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const { login, fetchMe } = useAuth()
 const { t } = useI18n()
+const localePath = useLocalePath()
 
 // Landing here with an existing, still-valid token (e.g. the logo on a
 // public page links to "/", which redirects to /login regardless of auth
@@ -8,7 +9,7 @@ const { t } = useI18n()
 // owner straight to the panel instead.
 const existingUser = await fetchMe()
 if (existingUser) {
-  await navigateTo('/panel')
+  await navigateTo(localePath('/panel'))
 }
 
 const email = ref('')
@@ -23,7 +24,7 @@ async function onSubmit() {
   isSubmitting.value = false
 
   if (result.success) {
-    await navigateTo('/panel')
+    await navigateTo(localePath('/panel'))
   } else {
     errorMessage.value = t(result.errorKey)
   }
