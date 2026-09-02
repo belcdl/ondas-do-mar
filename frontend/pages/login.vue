@@ -3,9 +3,8 @@ const { login, fetchMe } = useAuth()
 const { t } = useI18n()
 const localePath = useLocalePath()
 
-// Landing here with an existing, still-valid token (e.g. the logo on a
-// public page links to "/", which redirects to /login regardless of auth
-// state) shouldn't show the form again — send an already-authenticated
+// Landing here with an existing, still-valid token (e.g. a bookmarked
+// /login URL) shouldn't show the form again — send an already-authenticated
 // owner straight to the panel instead.
 const existingUser = await fetchMe()
 if (existingUser) {

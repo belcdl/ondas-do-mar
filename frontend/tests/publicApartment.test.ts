@@ -49,8 +49,8 @@ describe('apartamentos/[id] public page', () => {
       component.find(`img[src="${PUBLIC_APARTMENT.photos[1]}"]`).exists(),
     ).toBe(true)
     expect(component.text()).toContain('Wifi')
-    expect(component.text()).toContain('Terrace')
-    expect(component.text()).not.toContain('Elevator')
+    expect(component.text()).toContain('Terraza')
+    expect(component.text()).not.toContain('Ascensor')
   })
 
   it('shows a not-found message instead of throwing when the apartment is missing or inactive', async () => {
@@ -58,7 +58,7 @@ describe('apartamentos/[id] public page', () => {
 
     const component = await mountSuspended(PublicApartmentPage)
 
-    expect(component.text()).toContain('Apartment not found.')
+    expect(component.text()).toContain('No se ha encontrado el apartamento.')
   })
 
   it('opens the lightbox on the clicked photo, shown uncropped', async () => {
@@ -86,7 +86,7 @@ describe('apartamentos/[id] public page', () => {
 
     await component.find(`img[src="${PUBLIC_APARTMENT.photos[0]}"]`).trigger('click')
 
-    const nextButton = document.querySelector('button[aria-label="Next photo"]') as HTMLButtonElement | null
+    const nextButton = document.querySelector('button[aria-label="Foto siguiente"]') as HTMLButtonElement | null
     expect(nextButton).not.toBeNull()
     nextButton!.click()
     await nextTick()

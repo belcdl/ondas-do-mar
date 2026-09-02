@@ -58,7 +58,7 @@ describe('booking-confirmed page', () => {
     const component = await mountSuspended(BookingConfirmedPage)
 
     expect(component.text()).toContain('ABCD1234')
-    expect(component.text()).toContain('your apartment')
+    expect(component.text()).toContain('tu apartamento')
   })
 
   it('shows a not-found message and does not call the API when there is no confirmation_code in the query', async () => {
@@ -67,7 +67,7 @@ describe('booking-confirmed page', () => {
     const component = await mountSuspended(BookingConfirmedPage)
 
     expect(mockApi).not.toHaveBeenCalled()
-    expect(component.text()).toContain('Booking not found.')
+    expect(component.text()).toContain('No se ha encontrado la reserva.')
   })
 
   it('shows a not-found message when the booking lookup 404s', async () => {
@@ -77,6 +77,6 @@ describe('booking-confirmed page', () => {
     const component = await mountSuspended(BookingConfirmedPage)
 
     expect(mockApi).toHaveBeenCalledTimes(1)
-    expect(component.text()).toContain('Booking not found.')
+    expect(component.text()).toContain('No se ha encontrado la reserva.')
   })
 })

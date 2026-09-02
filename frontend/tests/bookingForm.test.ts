@@ -102,7 +102,7 @@ describe('apartamentos/[id]/reservar page', () => {
     component.setupState.guests.value = 2
     await component.setupState.onCheckAvailability()
 
-    expect(component.text()).toContain('Not available for those dates.')
+    expect(component.text()).toContain('No hay disponibilidad para esas fechas.')
     expect(component.setupState.availabilityResult.value).toBeNull()
     expect(component.find('input[type="email"]').exists()).toBe(false)
   })
@@ -123,7 +123,7 @@ describe('apartamentos/[id]/reservar page', () => {
 
     expect(mockApi).toHaveBeenCalledTimes(2) // only the public-apartment GET and availability search
     expect(mockToastAdd).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Phone is required' }),
+      expect.objectContaining({ title: 'El teléfono es obligatorio' }),
     )
     expect(mockNavigateTo).not.toHaveBeenCalled()
   })
@@ -147,7 +147,7 @@ describe('apartamentos/[id]/reservar page', () => {
     component.setupState.guestPhone.value = '+34600000000'
     await component.setupState.onSubmitBooking()
 
-    expect(component.text()).toContain('Those dates are no longer available. Please check availability again.')
+    expect(component.text()).toContain('Esas fechas ya no están disponibles. Por favor, vuelve a comprobar la disponibilidad.')
     expect(component.setupState.availabilityResult.value).toBeNull()
     expect(component.find('input[type="email"]').exists()).toBe(false)
     expect(mockNavigateTo).not.toHaveBeenCalled()

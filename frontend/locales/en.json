@@ -310,5 +310,56 @@
       "syncSuccess": "Sync completed",
       "syncError": "Could not sync this source"
     }
+  },
+  "home": {
+    "seo": {
+      "title": "Ondas do Mar — Boutique seafront apartments",
+      "description": "Boutique apartments right on the seafront. Discover our accommodation and book your stay directly, no middleman."
+    },
+    "nav": {
+      "nosotros": "About us",
+      "apartments": "Apartments",
+      "entorno": "The area",
+      "reserve": "Book now"
+    },
+    "hero": {
+      "tagline": "Your seafront getaway starts here",
+      "checkIn": "Check-in date",
+      "checkOut": "Check-out date",
+      "guests": "Guests",
+      "search": "Search availability",
+      "noResults": "No apartments available for those dates.",
+      "error": "Search failed. Please try again.",
+      "viewListing": "View listing"
+    },
+    "nosotros": {
+      "title": "About us",
+      "body": "Ondas do Mar was born from a love of the coast and a passion for welcoming our guests. We take care of every detail so your stay is one to remember.",
+      "pending": "Content pending final copy."
+    },
+    "entorno": {
+      "title": "The area",
+      "body": "Just steps from the beach, surrounded by nature, with easy access to the area's best spots, restaurants and trails.",
+      "pending": "Content pending final copy."
+    },
+    "teaser": {
+      "title": "Our apartments",
+      "viewListing": "View listing",
+      "viewAll": "View all apartments"
+    },
+    "footer": {
+      "rights": "All rights reserved."
+    }
+  },
+  "apartmentsList": {
+    "seo": {
+      "title": "Apartments — Ondas do Mar",
+      "description": "Discover all of our boutique seafront apartments and pick the one that best fits your stay."
+    },
+    "title": "Apartments",
+    "viewListing": "View listing",
+    "maxGuestsLabel": "Max guests",
+    "empty": "There are no apartments available right now.",
+    "loadError": "Could not load apartments."
   }
 }

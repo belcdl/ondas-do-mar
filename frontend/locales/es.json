@@ -310,5 +310,56 @@
       "syncSuccess": "Sincronización completada",
       "syncError": "No se pudo sincronizar esta fuente"
     }
+  },
+  "home": {
+    "seo": {
+      "title": "Ondas do Mar — Apartamentos boutique frente al mar",
+      "description": "Apartamentos boutique en primera línea de mar. Descubre nuestro alojamiento y reserva tu estancia directamente, sin intermediarios."
+    },
+    "nav": {
+      "nosotros": "Nosotros",
+      "apartments": "Apartamentos",
+      "entorno": "Entorno",
+      "reserve": "Reservar"
+    },
+    "hero": {
+      "tagline": "Tu escapada frente al mar empieza aquí",
+      "checkIn": "Fecha de entrada",
+      "checkOut": "Fecha de salida",
+      "guests": "Huéspedes",
+      "search": "Buscar disponibilidad",
+      "noResults": "No hay apartamentos disponibles para esas fechas.",
+      "error": "No se pudo completar la búsqueda. Inténtalo de nuevo.",
+      "viewListing": "Ver ficha"
+    },
+    "nosotros": {
+      "title": "Nosotros",
+      "body": "Ondas do Mar nace del cariño por la costa y por recibir bien a quien nos visita. Cuidamos cada detalle de nuestros apartamentos para que tu estancia sea memorable.",
+      "pending": "Contenido pendiente de redacción final."
+    },
+    "entorno": {
+      "title": "Entorno",
+      "body": "A pocos pasos de la playa, rodeados de naturaleza y con fácil acceso a los mejores rincones, restaurantes y rutas de la zona.",
+      "pending": "Contenido pendiente de redacción final."
+    },
+    "teaser": {
+      "title": "Nuestros apartamentos",
+      "viewListing": "Ver ficha",
+      "viewAll": "Ver todos los apartamentos"
+    },
+    "footer": {
+      "rights": "Todos los derechos reservados."
+    }
+  },
+  "apartmentsList": {
+    "seo": {
+      "title": "Apartamentos — Ondas do Mar",
+      "description": "Descubre todos nuestros apartamentos boutique frente al mar y elige el que mejor se adapte a tu estancia."
+    },
+    "title": "Apartamentos",
+    "viewListing": "Ver ficha",
+    "maxGuestsLabel": "Huéspedes máx.",
+    "empty": "No hay apartamentos disponibles en este momento.",
+    "loadError": "No se pudieron cargar los apartamentos."
   }
 }

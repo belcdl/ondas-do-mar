@@ -35,12 +35,6 @@ export default defineNuxtConfig({
     },
   },
 
-  // No marketing/guest-facing homepage yet (separate scope) — send / to the
-  // one entry point that exists so far rather than 404ing.
-  routeRules: {
-    '/': { redirect: '/login' },
-  },
-
   runtimeConfig: {
     public: {
       // Overridable via the NUXT_PUBLIC_API_URL env var (Nuxt's runtime-config

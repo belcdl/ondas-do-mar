@@ -1,13 +1,15 @@
 /* Ondas do Mar brand type: Poppins for UI/headings (matches the logo's bold
-   geometric wordmark), Dancing Script only for small decorative accents
-   (the "Boutique Apartments" tagline style) — never for body text or form
-   controls, cursive scripts hurt readability at UI sizes.
+   geometric wordmark), Fredoka (600/700) for the display wordmark used on
+   the hero and other large-format brand moments, Dancing Script only for
+   small decorative accents (the "Boutique Apartments" tagline style) —
+   never for body text or form controls, cursive scripts hurt readability
+   at UI sizes.
    Must be the very first statement in the file: @import "tailwindcss" and
    @import "@nuxt/ui" below expand into a large block of generated CSS, and
    once expanded, an @import placed after them is no longer "before all
    other statements" in the final bundle — CSS requires @import rules to
    precede everything except @charset. */
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Dancing+Script:wght@600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fredoka:wght@600;700&family=Dancing+Script:wght@600;700&display=swap");
 @import "tailwindcss";
 @import "@nuxt/ui";
 
@@ -41,7 +43,16 @@
   --color-sun-950: #421806;
 
   --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fredoka", ui-sans-serif, system-ui, sans-serif;
   --font-script: "Dancing Script", cursive;
+}
+
+/* Nuxt UI v3 exposes its global corner rounding as a single CSS var
+   (defaults to 0.25rem, set on `.light, :root` by @nuxt/ui's own CSS above)
+   rather than an app.config.ts option — overriding it here after the import
+   re-rounds every UButton/UCard/UInput/etc. app-wide in one place. */
+:root {
+  --ui-radius: 0.875rem;
 }
 
 body {
@@ -53,4 +64,10 @@ body {
    stays an explicit opt-in rather than leaking into body copy. */
 .font-script {
   font-family: var(--font-script);
+}
+
+/* Display wordmark weight — large-format brand moments (the hero) only,
+   never body copy or form controls. */
+.font-display {
+  font-family: var(--font-display);
 }
