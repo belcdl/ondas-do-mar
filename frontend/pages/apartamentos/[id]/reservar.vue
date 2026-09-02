@@ -135,10 +135,7 @@ async function onSubmitBooking() {
 
 <template>
   <div class="min-h-screen bg-neutral-50">
-    <header class="flex items-center justify-between px-6 py-4">
-      <AppLogo :height="48" />
-      <LocaleSwitcher />
-    </header>
+    <SiteHeader />
 
     <div class="mx-auto flex max-w-xl flex-col gap-6 px-4 pb-16 pt-4">
       <p v-if="notFound" class="text-center text-neutral-500">

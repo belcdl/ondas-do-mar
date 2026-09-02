@@ -330,7 +330,8 @@
       "search": "Search availability",
       "noResults": "No apartments available for those dates.",
       "error": "Search failed. Please try again.",
-      "viewListing": "View listing"
+      "viewListing": "View listing",
+      "imageAlt": "Pontevedra estuary with moored sailboats next to Portonovo"
     },
     "nosotros": {
       "title": "About us",
@@ -340,7 +341,14 @@
     "entorno": {
       "title": "The area",
       "body": "Just steps from the beach, surrounded by nature, with easy access to the area's best spots, restaurants and trails.",
-      "pending": "Content pending final copy."
+      "pending": "Content pending final copy.",
+      "gallery": {
+        "sillas": "Portonovo beach with chairs facing the sea and mist over the hills",
+        "paseo": "Seafront promenade next to the beach with pine trees in Portonovo",
+        "conchas": "Close-up of shells in the sand on a Portonovo beach",
+        "ria": "Pontevedra estuary with moored sailboats next to a pine grove",
+        "playa": "Quiet Portonovo beach under a clear sky"
+      }
     },
     "teaser": {
       "title": "Our apartments",

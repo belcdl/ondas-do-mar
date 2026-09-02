@@ -90,99 +90,96 @@ async function onSearch() {
 
 <template>
   <div class="min-h-screen bg-neutral-50">
-    <header
-      class="sticky top-0 z-10 flex items-center justify-between gap-4 bg-white/90 px-6 py-3 backdrop-blur"
-    >
-      <AppLogo :height="40" />
-
-      <!-- Same-page anchors, not routes — no locale resolution needed, plain
-           fragment links are the correct tool here. -->
-      <nav class="hidden items-center gap-6 text-sm font-medium text-neutral-600 sm:flex">
-        <a href="#nosotros" class="hover:text-primary-600">{{ t('home.nav.nosotros') }}</a>
-        <NuxtLinkLocale to="/apartamentos" class="hover:text-primary-600">
-          {{ t('home.nav.apartments') }}
-        </NuxtLinkLocale>
-        <a href="#entorno" class="hover:text-primary-600">{{ t('home.nav.entorno') }}</a>
-      </nav>
-
-      <div class="flex items-center gap-3">
-        <LocaleSwitcher />
-        <UButton :label="t('home.nav.reserve')" to="#reservar" size="sm" class="rounded-full" />
-      </div>
-    </header>
+    <SiteHeader />
 
     <section
       id="reservar"
-      class="relative flex min-h-[34rem] scroll-mt-16 flex-col items-center justify-center gap-8 bg-gradient-to-br from-brand-700 via-brand-600 to-sun-500 px-4 py-20 text-center"
+      class="relative flex min-h-[34rem] scroll-mt-16 items-center justify-center overflow-hidden px-4 py-20 text-center"
     >
-      <div class="flex flex-col items-center gap-4">
-        <AppLogo variant="wordmark" :height="56" />
-        <h1 class="max-w-xl text-3xl font-semibold text-white sm:text-4xl">
-          {{ t('home.hero.tagline') }}
-        </h1>
-      </div>
-
-      <UCard class="w-full max-w-3xl text-left" :ui="{ root: 'bg-white/95' }">
-        <form
-          class="grid grid-cols-1 gap-4 sm:grid-cols-4 sm:items-end"
-          @submit.prevent="onSearch"
-        >
-          <UFormField :label="t('home.hero.checkIn')" class="sm:col-span-1">
-            <UInput v-model="checkIn" type="date" required class="w-full" />
-          </UFormField>
-          <UFormField :label="t('home.hero.checkOut')" class="sm:col-span-1">
-            <UInput v-model="checkOut" type="date" required class="w-full" />
-          </UFormField>
-          <UFormField :label="t('home.hero.guests')" class="sm:col-span-1">
-            <UInputNumber v-model="guests" :min="1" class="w-full" />
-          </UFormField>
-          <UButton
-            type="submit"
-            block
-            size="lg"
-            class="rounded-full sm:col-span-1"
-            :loading="isSearching"
-            :label="t('home.hero.search')"
-          />
-        </form>
-      </UCard>
-
-      <UAlert
-        v-if="errorMessage"
-        class="w-full max-w-3xl"
-        color="error"
-        variant="soft"
-        :title="errorMessage"
-        role="alert"
+      <!-- Placeholder hero photo (real property photos pending, this is a
+           first test shot) — a dark gradient overlay keeps the white
+           wordmark/text legible on top of whatever image ends up here.
+           Both are position:absolute with no z-index (stack level 0), which
+           CSS paints *after* plain in-flow content — without the z-10
+           wrapper below, they'd end up covering the search card instead of
+           sitting behind it. -->
+      <img
+        src="/images/hero-ria.jpg"
+        :alt="t('home.hero.imageAlt')"
+        class="absolute inset-0 h-full w-full object-cover [object-position:50%_65%]"
       />
+      <div class="absolute inset-0 bg-gradient-to-br from-brand-900/80 via-brand-800/60 to-sun-700/50" />
 
-      <UCard v-if="hasSearched && results.length" class="w-full max-w-3xl text-left">
-        <ul class="flex flex-col divide-y divide-neutral-200">
-          <li
-            v-for="result in results"
-            :key="result.apartment_id"
-            class="flex items-center justify-between gap-4 py-3"
+      <div class="relative z-10 flex w-full flex-col items-center gap-8">
+        <div class="flex flex-col items-center gap-4">
+          <AppLogo variant="wordmark" :height="56" />
+          <h1 class="max-w-xl text-3xl font-semibold text-white sm:text-4xl">
+            {{ t('home.hero.tagline') }}
+          </h1>
+        </div>
+
+        <UCard class="w-full max-w-3xl text-left" :ui="{ root: 'bg-white/95' }">
+          <form
+            class="grid grid-cols-1 gap-4 sm:grid-cols-4 sm:items-end"
+            @submit.prevent="onSearch"
           >
-            <div>
-              <p class="font-medium text-neutral-800">{{ result.name }}</p>
-              <p class="text-sm text-neutral-500">
-                {{ result.nights }} · {{ result.price_total }} {{ result.currency }}
-              </p>
-            </div>
+            <UFormField :label="t('home.hero.checkIn')" class="sm:col-span-1">
+              <UInput v-model="checkIn" type="date" required class="w-full" />
+            </UFormField>
+            <UFormField :label="t('home.hero.checkOut')" class="sm:col-span-1">
+              <UInput v-model="checkOut" type="date" required class="w-full" />
+            </UFormField>
+            <UFormField :label="t('home.hero.guests')" class="sm:col-span-1">
+              <UInputNumber v-model="guests" :min="1" class="w-full" />
+            </UFormField>
             <UButton
-              size="sm"
-              variant="ghost"
-              class="rounded-full"
-              :label="t('home.hero.viewListing')"
-              :to="localePath(`/apartamentos/${result.apartment_id}`)"
+              type="submit"
+              block
+              size="lg"
+              class="rounded-full sm:col-span-1"
+              :loading="isSearching"
+              :label="t('home.hero.search')"
             />
-          </li>
-        </ul>
-      </UCard>
+          </form>
+        </UCard>
 
-      <p v-else-if="hasSearched && !errorMessage" class="text-white/90">
-        {{ t('home.hero.noResults') }}
-      </p>
+        <UAlert
+          v-if="errorMessage"
+          class="w-full max-w-3xl"
+          color="error"
+          variant="soft"
+          :title="errorMessage"
+          role="alert"
+        />
+
+        <UCard v-if="hasSearched && results.length" class="w-full max-w-3xl text-left">
+          <ul class="flex flex-col divide-y divide-neutral-200">
+            <li
+              v-for="result in results"
+              :key="result.apartment_id"
+              class="flex items-center justify-between gap-4 py-3"
+            >
+              <div>
+                <p class="font-medium text-neutral-800">{{ result.name }}</p>
+                <p class="text-sm text-neutral-500">
+                  {{ result.nights }} · {{ result.price_total }} {{ result.currency }}
+                </p>
+              </div>
+              <UButton
+                size="sm"
+                variant="ghost"
+                class="rounded-full"
+                :label="t('home.hero.viewListing')"
+                :to="localePath(`/apartamentos/${result.apartment_id}`)"
+              />
+            </li>
+          </ul>
+        </UCard>
+
+        <p v-else-if="hasSearched && !errorMessage" class="text-white/90">
+          {{ t('home.hero.noResults') }}
+        </p>
+      </div>
     </section>
 
     <section class="mx-auto max-w-6xl px-4 py-16">
@@ -235,6 +232,35 @@ async function onSearch() {
         <h2 class="text-2xl font-semibold text-neutral-800">{{ t('home.entorno.title') }}</h2>
         <p class="mt-4 text-neutral-700">{{ t('home.entorno.body') }}</p>
         <p class="mt-2 text-sm italic text-neutral-400">{{ t('home.entorno.pending') }}</p>
+      </div>
+
+      <!-- First test photos, not final property shots — swap freely once
+           real ones are ready. -->
+      <div class="mx-auto mt-10 grid max-w-5xl grid-cols-2 gap-4 sm:grid-cols-4">
+        <img
+          src="/images/entorno-sillas.jpg"
+          :alt="t('home.entorno.gallery.sillas')"
+          loading="lazy"
+          class="h-40 w-full rounded-2xl object-cover sm:h-56"
+        />
+        <img
+          src="/images/entorno-paseo.jpg"
+          :alt="t('home.entorno.gallery.paseo')"
+          loading="lazy"
+          class="h-40 w-full rounded-2xl object-cover sm:h-56"
+        />
+        <img
+          src="/images/entorno-conchas.jpg"
+          :alt="t('home.entorno.gallery.conchas')"
+          loading="lazy"
+          class="h-40 w-full rounded-2xl object-cover sm:h-56"
+        />
+        <img
+          src="/images/entorno-playa.jpg"
+          :alt="t('home.entorno.gallery.playa')"
+          loading="lazy"
+          class="h-40 w-full rounded-2xl object-cover sm:h-56"
+        />
       </div>
     </section>
 

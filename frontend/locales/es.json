@@ -330,7 +330,8 @@
       "search": "Buscar disponibilidad",
       "noResults": "No hay apartamentos disponibles para esas fechas.",
       "error": "No se pudo completar la búsqueda. Inténtalo de nuevo.",
-      "viewListing": "Ver ficha"
+      "viewListing": "Ver ficha",
+      "imageAlt": "Ría de Pontevedra con veleros amarrados junto a Portonovo"
     },
     "nosotros": {
       "title": "Nosotros",
@@ -340,7 +341,14 @@
     "entorno": {
       "title": "Entorno",
       "body": "A pocos pasos de la playa, rodeados de naturaleza y con fácil acceso a los mejores rincones, restaurantes y rutas de la zona.",
-      "pending": "Contenido pendiente de redacción final."
+      "pending": "Contenido pendiente de redacción final.",
+      "gallery": {
+        "sillas": "Playa de Portonovo con sillas frente al mar y niebla sobre las montañas",
+        "paseo": "Paseo marítimo junto a la playa con pinares en Portonovo",
+        "conchas": "Detalle de conchas en la arena de una playa de Portonovo",
+        "ria": "Ría de Pontevedra con veleros amarrados junto a un pinar",
+        "playa": "Playa tranquila de Portonovo con cielo despejado"
+      }
     },
     "teaser": {
       "title": "Nuestros apartamentos",

@@ -43,10 +43,7 @@ try {
 
 <template>
   <div class="min-h-screen bg-neutral-50">
-    <header class="flex items-center justify-between px-6 py-4">
-      <AppLogo :height="48" />
-      <LocaleSwitcher />
-    </header>
+    <SiteHeader />
 
     <div class="mx-auto max-w-6xl px-4 pb-16 pt-4">
       <h1 class="text-center text-2xl font-semibold text-neutral-800">
