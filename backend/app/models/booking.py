@@ -97,6 +97,11 @@ class Booking(Base):
     currency: Mapped[str] = mapped_column(String(3), nullable=False)
     confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     cancelled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    # Set once the check-in reminder email has been sent, so the scheduler
+    # job never sends it twice — see app/core/scheduler.py.
+    checkin_reminder_sent_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

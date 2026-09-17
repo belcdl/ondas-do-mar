@@ -78,6 +78,22 @@ class BookingRepository:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none() is not None
 
+    async def list_pending_checkin_reminders(self, today: date, tomorrow: date) -> Sequence[Booking]:
+        """CONFIRMED bookings checking in within [today, tomorrow] that
+        haven't had their reminder sent yet. The two-day window (not just
+        tomorrow) is intentional: if yesterday's send failed, today's tick
+        retries it instead of losing the reminder for that guest entirely —
+        see app/core/scheduler.py."""
+        stmt = (
+            select(Booking)
+            .where(Booking.status == BookingStatus.CONFIRMED)
+            .where(Booking.checkin_reminder_sent_at.is_(None))
+            .where(Booking.check_in_date >= today)
+            .where(Booking.check_in_date <= tomorrow)
+        )
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
+
     async def update(self, booking: Booking) -> Booking:
         try:
             await self.db.commit()

@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
 from fastapi.responses import JSONResponse
 
 from app.api.deps import get_payment_service
@@ -28,6 +28,7 @@ async def create_checkout_session(
 @router.post("/webhooks/stripe", status_code=status.HTTP_200_OK)
 async def stripe_webhook(
     request: Request,
+    background_tasks: BackgroundTasks,
     service: PaymentService = Depends(get_payment_service),
 ) -> JSONResponse:
     """Public by necessity — Stripe calls this, not an authenticated user.
@@ -39,7 +40,7 @@ async def stripe_webhook(
     payload = await request.body()
     sig_header = request.headers.get("stripe-signature", "")
     try:
-        await service.handle_webhook_event(payload, sig_header)
+        await service.handle_webhook_event(payload, sig_header, background_tasks)
     except InvalidWebhookSignatureError as exc:
         return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exc)})
     return JSONResponse(status_code=status.HTTP_200_OK, content={"status": "ok"})

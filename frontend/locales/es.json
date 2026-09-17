@@ -74,6 +74,10 @@
       "label": "Otras comodidades",
       "placeholder": "Añade aquí cualquier otra comodidad que no aparezca en la lista"
     },
+    "checkInInstructions": {
+      "label": "Instrucciones de check-in",
+      "placeholder": "Código de acceso, ubicación de llaves, contacto de llegada... Solo se envía al huésped por email tras el pago, nunca se muestra en la ficha pública."
+    },
     "deactivateConfirm": {
       "title": "Desactivar apartamento",
       "message": "¿Seguro que quieres desactivar \"{name}\"? Dejará de aparecer en la búsqueda de disponibilidad; puedes seguir viéndolo aquí activando \"mostrar inactivos\".",

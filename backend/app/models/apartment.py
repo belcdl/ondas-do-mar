@@ -70,6 +70,10 @@ class Apartment(Base):
         ARRAY(String), nullable=False, default=list, server_default=text("'{}'")
     )
     amenities_other: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Free text from the owner (access code, key location, contact) — never
+    # exposed on the public listing (app.schemas.apartment.ApartmentPublicRead),
+    # only sent to a guest by email once their booking is paid.
+    check_in_instructions: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=True, server_default=text("true")
     )

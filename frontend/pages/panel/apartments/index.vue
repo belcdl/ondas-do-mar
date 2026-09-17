@@ -16,6 +16,7 @@ interface Apartment {
   max_guests: number
   amenities: string[]
   amenities_other: string | null
+  check_in_instructions: string | null
   is_active: boolean
   created_at: string
   updated_at: string
@@ -32,6 +33,7 @@ interface ApartmentFormState {
   max_guests: number | null
   amenities: string[]
   amenities_other: string | null
+  check_in_instructions: string | null
 }
 
 const api = useApi()
@@ -102,6 +104,7 @@ function emptyForm(): ApartmentFormState {
     max_guests: 4,
     amenities: [],
     amenities_other: null,
+    check_in_instructions: null,
   }
 }
 
@@ -132,6 +135,7 @@ function openEditForm(apartment: Apartment) {
     max_guests: apartment.max_guests,
     amenities: [...apartment.amenities],
     amenities_other: apartment.amenities_other,
+    check_in_instructions: apartment.check_in_instructions,
   })
   isFormOpen.value = true
 }
@@ -334,6 +338,14 @@ async function confirmDeactivate() {
                 v-model="form.amenities_other"
                 :rows="2"
                 :placeholder="t('panelApartments.amenitiesOther.placeholder')"
+                class="w-full"
+              />
+            </UFormField>
+            <UFormField :label="t('panelApartments.checkInInstructions.label')">
+              <UTextarea
+                v-model="form.check_in_instructions"
+                :rows="3"
+                :placeholder="t('panelApartments.checkInInstructions.placeholder')"
                 class="w-full"
               />
             </UFormField>

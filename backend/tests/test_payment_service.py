@@ -2,9 +2,11 @@ import uuid
 from datetime import date, timedelta
 from decimal import Decimal
 from types import SimpleNamespace
+from unittest import mock
 
 import pytest
 import stripe
+from fastapi import BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.booking import BookingStatus
@@ -22,6 +24,7 @@ from app.schemas.owner import OwnerCreate
 from app.schemas.rate_rule import RateRuleCreate
 from app.services.apartment import ApartmentService
 from app.services.booking import BookingService
+from app.services.email import EmailService
 from app.services.owner import OwnerService
 from app.services.payment import (
     BookingNotPayableError,
@@ -103,11 +106,12 @@ def _booking_payload(apartment_id: uuid.UUID, **overrides: object) -> BookingCre
     return BookingCreate(**payload)
 
 
-def _payment_service(db_session: AsyncSession) -> PaymentService:
+def _payment_service(db_session: AsyncSession, email_service: EmailService | None = None) -> PaymentService:
     return PaymentService(
         PaymentRepository(db_session),
         ApartmentRepository(db_session),
         _booking_service(db_session),
+        email_service if email_service is not None else EmailService(),
     )
 
 
@@ -241,7 +245,7 @@ async def test_webhook_checkout_completed_confirms_booking(
 
     event = _completed_event("cs_test_1", "pi_test_123")
     _patch_construct_event(monkeypatch, event)
-    await service.handle_webhook_event(b"{}", "sig_header")
+    await service.handle_webhook_event(b"{}", "sig_header", BackgroundTasks())
 
     payment = await PaymentRepository(db_session).get_by_booking_id(booking.id)
     assert payment is not None
@@ -251,6 +255,37 @@ async def test_webhook_checkout_completed_confirms_booking(
     confirmed_booking = await _booking_service(db_session).get_booking(booking.id)
     assert confirmed_booking.status == BookingStatus.CONFIRMED
     assert confirmed_booking.confirmed_at is not None
+
+
+async def test_webhook_completed_event_schedules_booking_confirmation_email(
+    db_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The confirmation email must be scheduled via BackgroundTasks (so it
+    runs after the response is sent back to Stripe), with the confirmed
+    booking, its apartment and its owner as arguments."""
+    owner = await _make_owner(db_session)
+    apartment = await _make_apartment(db_session, owner.id)
+    await _make_rate_rule(db_session, apartment.id)
+    booking = await _booking_service(db_session).create_booking(_booking_payload(apartment.id))
+
+    fake_email_service = mock.Mock()
+    fake_email_service.send_booking_confirmation = mock.Mock()
+
+    _patch_stripe_checkout(monkeypatch)
+    service = _payment_service(db_session, email_service=fake_email_service)
+    await service.create_checkout_session(booking.id)
+
+    _patch_construct_event(monkeypatch, _completed_event("cs_test_1", "pi_test_123"))
+    background_tasks = BackgroundTasks()
+    await service.handle_webhook_event(b"{}", "sig_header", background_tasks)
+
+    assert len(background_tasks.tasks) == 1
+    task = background_tasks.tasks[0]
+    assert task.func == fake_email_service.send_booking_confirmation
+    scheduled_booking, scheduled_apartment, scheduled_owner = task.args
+    assert scheduled_booking.id == booking.id
+    assert scheduled_apartment.id == apartment.id
+    assert scheduled_owner.id == owner.id
 
 
 async def test_webhook_is_idempotent_on_duplicate_event(
@@ -269,13 +304,13 @@ async def test_webhook_is_idempotent_on_duplicate_event(
 
     event = _completed_event("cs_test_1", "pi_test_123")
     _patch_construct_event(monkeypatch, event)
-    await service.handle_webhook_event(b"{}", "sig_header")
+    await service.handle_webhook_event(b"{}", "sig_header", BackgroundTasks())
 
     booking_service = _booking_service(db_session)
     first_confirmed = await booking_service.get_booking(booking.id)
 
     # Second delivery of the exact same event.
-    await service.handle_webhook_event(b"{}", "sig_header")
+    await service.handle_webhook_event(b"{}", "sig_header", BackgroundTasks())
 
     second_confirmed = await booking_service.get_booking(booking.id)
     assert second_confirmed.status == BookingStatus.CONFIRMED
@@ -291,7 +326,7 @@ async def test_webhook_invalid_signature_raises(
     service = _payment_service(db_session)
 
     with pytest.raises(InvalidWebhookSignatureError):
-        await service.handle_webhook_event(b"{}", "not-a-real-signature")
+        await service.handle_webhook_event(b"{}", "not-a-real-signature", BackgroundTasks())
 
 
 async def test_webhook_ignores_unhandled_event_types(
@@ -306,7 +341,7 @@ async def test_webhook_ignores_unhandled_event_types(
     _patch_construct_event(monkeypatch, event)
     service = _payment_service(db_session)
 
-    await service.handle_webhook_event(b"{}", "sig_header")
+    await service.handle_webhook_event(b"{}", "sig_header", BackgroundTasks())
 
     unchanged_booking = await _booking_service(db_session).get_booking(booking.id)
     assert unchanged_booking.status == BookingStatus.PENDING
@@ -326,7 +361,7 @@ async def test_webhook_checkout_expired_marks_payment_failed(
     await service.create_checkout_session(booking.id)
 
     _patch_construct_event(monkeypatch, _expired_event("cs_test_1"))
-    await service.handle_webhook_event(b"{}", "sig_header")
+    await service.handle_webhook_event(b"{}", "sig_header", BackgroundTasks())
 
     payment = await PaymentRepository(db_session).get_by_booking_id(booking.id)
     assert payment is not None
@@ -363,10 +398,10 @@ async def test_webhook_expired_after_completed_is_noop(
     await service.create_checkout_session(booking.id)
 
     _patch_construct_event(monkeypatch, _completed_event("cs_test_1", "pi_test_123"))
-    await service.handle_webhook_event(b"{}", "sig_header")
+    await service.handle_webhook_event(b"{}", "sig_header", BackgroundTasks())
 
     _patch_construct_event(monkeypatch, _expired_event("cs_test_1"))
-    await service.handle_webhook_event(b"{}", "sig_header")
+    await service.handle_webhook_event(b"{}", "sig_header", BackgroundTasks())
 
     payment = await PaymentRepository(db_session).get_by_booking_id(booking.id)
     assert payment is not None
@@ -383,4 +418,4 @@ async def test_webhook_expired_for_unknown_session_does_not_raise(
     _patch_construct_event(monkeypatch, _expired_event("cs_test_does_not_exist"))
     service = _payment_service(db_session)
 
-    await service.handle_webhook_event(b"{}", "sig_header")
+    await service.handle_webhook_event(b"{}", "sig_header", BackgroundTasks())

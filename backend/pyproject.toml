@@ -17,6 +17,7 @@ dependencies = [
     "icalendar>=7.3.0",
     "apscheduler>=3.11.3",
     "httpx>=0.28.1",
+    "fastapi-mail>=1.6.8",
 ]
 
 [dependency-groups]

@@ -74,6 +74,10 @@
       "label": "Other amenities",
       "placeholder": "Add anything else not covered above"
     },
+    "checkInInstructions": {
+      "label": "Check-in instructions",
+      "placeholder": "Access code, key location, arrival contact... Only ever emailed to the guest after payment, never shown on the public listing."
+    },
     "deactivateConfirm": {
       "title": "Deactivate apartment",
       "message": "Are you sure you want to deactivate \"{name}\"? It will stop showing up in availability search; you can still see it here by turning on \"show inactive\".",

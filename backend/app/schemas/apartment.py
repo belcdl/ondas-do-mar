@@ -18,6 +18,7 @@ class ApartmentBase(BaseModel):
     max_guests: int = Field(default=4, gt=0)
     amenities: list[AmenityType] = Field(default_factory=list)
     amenities_other: str | None = None
+    check_in_instructions: str | None = None
 
 
 class ApartmentCreate(ApartmentBase):
@@ -36,6 +37,7 @@ class ApartmentUpdate(BaseModel):
     max_guests: int | None = Field(default=None, gt=0)
     amenities: list[AmenityType] | None = None
     amenities_other: str | None = None
+    check_in_instructions: str | None = None
     is_active: bool | None = None
 
 

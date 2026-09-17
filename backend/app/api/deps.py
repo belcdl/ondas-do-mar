@@ -30,6 +30,7 @@ from app.services.apartment_photo import ApartmentPhotoService
 from app.services.availability import AvailabilityService
 from app.services.blocked_date import BlockedDateService
 from app.services.booking import BookingService
+from app.services.email import EmailService
 from app.services.ical_export import IcalExportService
 from app.services.ical_source import IcalSourceService
 from app.services.owner import OwnerService
@@ -151,12 +152,17 @@ def get_payment_repository(db: AsyncSession = Depends(get_db)) -> PaymentReposit
     return PaymentRepository(db)
 
 
+def get_email_service() -> EmailService:
+    return EmailService()
+
+
 def get_payment_service(
     repository: PaymentRepository = Depends(get_payment_repository),
     apartment_repository: ApartmentRepository = Depends(get_apartment_repository),
     booking_service: BookingService = Depends(get_booking_service),
+    email_service: EmailService = Depends(get_email_service),
 ) -> PaymentService:
-    return PaymentService(repository, apartment_repository, booking_service)
+    return PaymentService(repository, apartment_repository, booking_service, email_service)
 
 
 def get_user_service(repository: UserRepository = Depends(get_user_repository)) -> UserService:

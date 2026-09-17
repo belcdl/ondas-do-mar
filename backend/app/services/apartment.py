@@ -36,6 +36,7 @@ class ApartmentService:
             max_guests=data.max_guests,
             amenities=[amenity.value for amenity in data.amenities],
             amenities_other=data.amenities_other,
+            check_in_instructions=data.check_in_instructions,
         )
         try:
             return await self.repository.create(apartment)

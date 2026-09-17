@@ -2,6 +2,7 @@ import logging
 import uuid
 
 import stripe
+from fastapi import BackgroundTasks
 
 from app.core.config import get_settings
 from app.core.exceptions import AuthenticationError, BusinessRuleError, NotFoundError
@@ -10,6 +11,7 @@ from app.models.payment import Payment, PaymentStatus
 from app.repositories.apartment import ApartmentRepository
 from app.repositories.payment import PaymentRepository
 from app.services.booking import BookingService
+from app.services.email import EmailService
 
 logger = logging.getLogger(__name__)
 
@@ -36,10 +38,12 @@ class PaymentService:
         repository: PaymentRepository,
         apartment_repository: ApartmentRepository,
         booking_service: BookingService,
+        email_service: EmailService,
     ) -> None:
         self.repository = repository
         self.apartment_repository = apartment_repository
         self.booking_service = booking_service
+        self.email_service = email_service
 
     async def create_checkout_session(self, booking_id: uuid.UUID) -> str:
         booking = await self.booking_service.get_booking(booking_id)
@@ -101,7 +105,9 @@ class PaymentService:
 
         return session.url
 
-    async def handle_webhook_event(self, payload: bytes, sig_header: str) -> None:
+    async def handle_webhook_event(
+        self, payload: bytes, sig_header: str, background_tasks: BackgroundTasks
+    ) -> None:
         settings = get_settings()
         try:
             event = stripe.Webhook.construct_event(
@@ -128,7 +134,18 @@ class PaymentService:
             payment.status = PaymentStatus.SUCCEEDED
             payment.stripe_payment_intent_id = session["payment_intent"]
             await self.repository.update(payment)
-            await self.booking_service.confirm_booking(payment.booking_id)
+            booking = await self.booking_service.confirm_booking(payment.booking_id)
+
+            # apartment_id/owner_id are FKs with ondelete=RESTRICT, so both are
+            # guaranteed to still exist while the booking does (same reasoning
+            # as create_checkout_session above). Scheduled via BackgroundTasks
+            # so it runs after the response is sent back to Stripe, rather
+            # than delaying the webhook ack.
+            apartment = await self.apartment_repository.get_by_id(booking.apartment_id)
+            owner = await self.booking_service.owner_repository.get_by_id(booking.owner_id)
+            background_tasks.add_task(
+                self.email_service.send_booking_confirmation, booking, apartment, owner
+            )
         else:
             # checkout.session.expired: only PENDING -> FAILED. Webhook
             # delivery order isn't guaranteed, so an expired event arriving

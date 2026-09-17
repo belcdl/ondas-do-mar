@@ -29,6 +29,16 @@ class Settings(BaseSettings):
     stripe_publishable_key: str | None = None
     stripe_webhook_secret: str | None = None
 
+    # Generic SMTP — works with Gmail (app password) or any provider, not
+    # tied to a specific transactional-email vendor.
+    smtp_host: str | None = None
+    smtp_port: int = 587
+    smtp_username: str | None = None
+    smtp_password: str | None = None
+    smtp_from_email: str = "no-reply@ondasdomar.com"
+    smtp_from_name: str = "Ondas do Mar"
+    smtp_use_tls: bool = True
+
     media_root: str = "/app/media"
     media_public_base_url: str = "http://localhost:8000/media"
 

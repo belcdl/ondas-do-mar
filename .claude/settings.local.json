@@ -85,7 +85,18 @@
       "Bash(xargs grep -ln \"I18nHeadOptions\")",
       "Bash(git mv *)",
       "Bash(npm test *)",
-      "Bash(taskkill //F //IM node.exe)"
+      "Bash(taskkill //F //IM node.exe)",
+      "Bash(../.venv/Scripts/uv.exe add *)",
+      "Bash(xargs grep -ln \"class MessageSchema\\\\|class ConnectionConfig\\\\|class FastMail\")",
+      "Bash(\"../.venv/Scripts/uv.exe\" run *)",
+      "Bash(python -c ' *)",
+      "Bash(python -)",
+      "Bash(python *)",
+      "Bash(../.venv/Scripts/python.exe -c \"from aiosmtplib.api import DEFAULT_TIMEOUT; print\\(DEFAULT_TIMEOUT\\)\")",
+      "Bash(.venv/Scripts/python.exe -c \"from aiosmtplib.api import DEFAULT_TIMEOUT; print\\(DEFAULT_TIMEOUT\\)\")",
+      "Bash(timeout 5 .venv/Scripts/python.exe -c \"\nimport asyncio, time\nimport aiosmtplib\n\nasync def main\\(\\):\n    start = time.time\\(\\)\n    try:\n        await aiosmtplib.SMTP\\(hostname='', port=587, timeout=3\\).connect\\(\\)\n    except Exception as exc:\n        print\\('raised after', time.time\\(\\)-start, type\\(exc\\), exc\\)\n\nasyncio.run\\(main\\(\\)\\)\n\" 2>&1)",
+      "Bash(../.venv/Scripts/python.exe -m pytest -q)",
+      "Bash(../.venv/Scripts/uv.exe run *)"
     ]
   }
 }
