@@ -14,6 +14,18 @@ class NightPriceRead(BaseModel):
     )
 
 
+class DayPricingRead(BaseModel):
+    date: date
+    price: Decimal | None
+    available: bool
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {"date": "2027-08-10", "price": "120.00", "available": True}
+        }
+    )
+
+
 class ApartmentAvailabilityRead(BaseModel):
     apartment_id: uuid.UUID
     name: str

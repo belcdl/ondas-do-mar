@@ -138,6 +138,10 @@
   "panelCalendar": {
     "title": "Calendar — {name}",
     "backLink": "← Back to my apartments",
+    "tabs": {
+      "pricing": "Pricing",
+      "bookings": "Bookings"
+    },
     "legend": {
       "priced": "Priced",
       "blocked": "Blocked",
@@ -239,6 +243,13 @@
     "lightbox": {
       "previous": "Previous photo",
       "next": "Next photo"
+    }
+  },
+  "availabilityCalendar": {
+    "title": "Availability and pricing",
+    "legend": {
+      "available": "Available",
+      "booked": "Booked"
     }
   },
   "bookingForm": {

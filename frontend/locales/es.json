@@ -138,6 +138,10 @@
   "panelCalendar": {
     "title": "Calendario — {name}",
     "backLink": "← Volver a mis apartamentos",
+    "tabs": {
+      "pricing": "Precios",
+      "bookings": "Reservas"
+    },
     "legend": {
       "priced": "Con precio",
       "blocked": "Bloqueado",
@@ -239,6 +243,13 @@
     "lightbox": {
       "previous": "Foto anterior",
       "next": "Foto siguiente"
+    }
+  },
+  "availabilityCalendar": {
+    "title": "Disponibilidad y precios",
+    "legend": {
+      "available": "Disponible",
+      "booked": "Reservado"
     }
   },
   "bookingForm": {

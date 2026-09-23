@@ -78,6 +78,26 @@ class BookingRepository:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none() is not None
 
+    async def list_confirmed_overlapping(
+        self, apartment_id: uuid.UUID, start_date: date, end_date: date
+    ) -> Sequence[Booking]:
+        """CONFIRMED bookings for apartment_id with at least one stayed night
+        inside [start_date, end_date] (inclusive on both ends). Same overlap
+        predicate as has_confirmed_overlap, returning the matching rows
+        instead of a bool — used where the caller needs to know which nights
+        each booking actually covers (e.g. AvailabilityService's pricing
+        calendar), not just whether any overlap exists."""
+        stmt = (
+            select(Booking)
+            .where(Booking.apartment_id == apartment_id)
+            .where(Booking.status == BookingStatus.CONFIRMED)
+            .where(Booking.check_in_date <= end_date)
+            .where(Booking.check_out_date > start_date)
+            .order_by(Booking.check_in_date)
+        )
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
+
     async def list_pending_checkin_reminders(self, today: date, tomorrow: date) -> Sequence[Booking]:
         """CONFIRMED bookings checking in within [today, tomorrow] that
         haven't had their reminder sent yet. The two-day window (not just

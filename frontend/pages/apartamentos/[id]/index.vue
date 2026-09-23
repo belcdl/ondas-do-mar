@@ -160,6 +160,10 @@ try {
           </p>
         </div>
 
+        <div class="mt-8">
+          <AvailabilityCalendar :apartment-id="apartment.id" />
+        </div>
+
         <UButton
           block
           size="xl"

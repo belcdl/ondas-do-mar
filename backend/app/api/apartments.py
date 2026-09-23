@@ -1,4 +1,5 @@
 import uuid
+from datetime import date
 
 from fastapi import APIRouter, Depends, Query, status
 
@@ -7,6 +8,7 @@ from app.api.deps import (
     get_apartment_photo_service,
     get_apartment_service,
     get_authorized_apartment,
+    get_availability_service,
     get_current_active_user,
     get_current_owner_or_none,
 )
@@ -21,8 +23,10 @@ from app.schemas.apartment import (
     ApartmentUpdate,
 )
 from app.schemas.apartment_photo import ApartmentPhotoRead
+from app.schemas.availability import DayPricingRead
 from app.services.apartment import ApartmentNotFoundError, ApartmentService
 from app.services.apartment_photo import ApartmentPhotoService
+from app.services.availability import AvailabilityService
 
 router = APIRouter(prefix="/apartments", tags=["apartments"])
 
@@ -107,6 +111,29 @@ async def get_apartment_public(
         raise ApartmentNotFoundError(f"Apartment {apartment_id} not found")
 
     return await _build_apartment_public_read(apartment, photo_service)
+
+
+@router.get("/{apartment_id}/pricing-calendar", response_model=list[DayPricingRead])
+async def get_apartment_pricing_calendar(
+    apartment_id: uuid.UUID,
+    from_date: date = Query(..., description="First day of the range (inclusive)."),
+    to_date: date = Query(..., description="Last day of the range (inclusive)."),
+    apartment_service: ApartmentService = Depends(get_apartment_service),
+    availability_service: AvailabilityService = Depends(get_availability_service),
+) -> list[DayPricingRead]:
+    """Day-by-day price and availability for an apartment, for the guest
+    calendar on the apartment page. Public — no authentication required,
+    same as /public and /calendar.ics. 404 if the apartment doesn't exist or
+    isn't active (same criterion as the other public endpoints). 422 if
+    to_date is before from_date, or the range exceeds 400 days."""
+    apartment = await apartment_service.get_apartment(apartment_id)
+    if not apartment.is_active:
+        raise ApartmentNotFoundError(f"Apartment {apartment_id} not found")
+
+    days = await availability_service.get_pricing_calendar(apartment_id, from_date, to_date)
+    return [
+        DayPricingRead(date=day.date, price=day.price, available=day.available) for day in days
+    ]
 
 
 @router.get("/{apartment_id}", response_model=ApartmentRead)

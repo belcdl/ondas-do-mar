@@ -96,7 +96,11 @@
       "Bash(.venv/Scripts/python.exe -c \"from aiosmtplib.api import DEFAULT_TIMEOUT; print\\(DEFAULT_TIMEOUT\\)\")",
       "Bash(timeout 5 .venv/Scripts/python.exe -c \"\nimport asyncio, time\nimport aiosmtplib\n\nasync def main\\(\\):\n    start = time.time\\(\\)\n    try:\n        await aiosmtplib.SMTP\\(hostname='', port=587, timeout=3\\).connect\\(\\)\n    except Exception as exc:\n        print\\('raised after', time.time\\(\\)-start, type\\(exc\\), exc\\)\n\nasyncio.run\\(main\\(\\)\\)\n\" 2>&1)",
       "Bash(../.venv/Scripts/python.exe -m pytest -q)",
-      "Bash(../.venv/Scripts/uv.exe run *)"
+      "Bash(../.venv/Scripts/uv.exe run *)",
+      "Bash(powershell -Command \"Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue\")",
+      "Bash(powershell -Command \"Start-Process 'C:\\\\Program Files\\\\Docker\\\\Docker\\\\Docker Desktop.exe'\")",
+      "Bash(xargs grep -l \"calendar\" -i)",
+      "Bash(xargs grep -l \"components/\")"
     ]
   }
 }

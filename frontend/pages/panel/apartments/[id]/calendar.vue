@@ -221,6 +221,43 @@ function dayContentView(iso: string): { classes: Record<string, boolean>; priceL
   }
 }
 
+// Bookings-only tab: same v-calendar, but driven solely by bookings.value
+// (rateRules/blockedDates are ignored here) and read-only — no @dayclick.
+const activeTab = ref<'pricing' | 'bookings'>('pricing')
+
+const bookingAttributes = computed<CalendarAttribute[]>(() =>
+  bookings.value.map((booking) => ({
+    key: `booking-only-${booking.id}`,
+    dates: [
+      {
+        start: parseLocalDate(booking.check_in_date),
+        end: addDays(parseLocalDate(booking.check_out_date), -1),
+      },
+    ],
+    highlight: { color: 'orange', fillMode: 'solid' },
+    popover: {
+      label: t('panelCalendar.tooltip.booking', {
+        name: booking.guest_full_name,
+        start: booking.check_in_date,
+        end: booking.check_out_date,
+      }),
+      visibility: 'hover',
+    },
+    order: 1,
+  })),
+)
+
+function bookingDayContentView(iso: string): { classes: Record<string, boolean>; guestName: string | null } {
+  const booking = bookings.value.find((b) => iso >= b.check_in_date && iso < b.check_out_date)
+  return {
+    classes: {
+      'bg-orange-200 text-orange-900': !!booking,
+      'bg-white text-neutral-400': !booking,
+    },
+    guestName: booking?.guest_full_name ?? null,
+  }
+}
+
 const rangeStart = ref<string | null>(null)
 const selectedRange = reactive({ start: '', end: '' })
 const isRangeActionOpen = ref(false)
@@ -435,35 +472,73 @@ async function deleteBlockedDate() {
       {{ t('panelCalendar.title', { name: apartment.name }) }}
     </h2>
 
-    <div class="flex flex-wrap gap-4 py-4 text-sm text-neutral-600">
-      <span class="flex items-center gap-2">
-        <span class="h-3 w-3 rounded bg-brand-100"></span>{{ t('panelCalendar.legend.priced') }}
-      </span>
-      <span class="flex items-center gap-2">
-        <span class="h-3 w-3 rounded bg-neutral-300"></span>{{ t('panelCalendar.legend.blocked') }}
-      </span>
-      <span class="flex items-center gap-2">
-        <span class="h-3 w-3 rounded bg-orange-200"></span>{{ t('panelCalendar.legend.booked') }}
-      </span>
-    </div>
+    <UTabs
+      v-model="activeTab"
+      :items="[
+        { label: t('panelCalendar.tabs.pricing'), value: 'pricing', slot: 'pricing' },
+        { label: t('panelCalendar.tabs.bookings'), value: 'bookings', slot: 'bookings' },
+      ]"
+      class="mt-4"
+    >
+      <template #pricing>
+        <div class="flex flex-wrap gap-4 py-4 text-sm text-neutral-600">
+          <span class="flex items-center gap-2">
+            <span class="h-3 w-3 rounded bg-brand-100"></span>{{ t('panelCalendar.legend.priced') }}
+          </span>
+          <span class="flex items-center gap-2">
+            <span class="h-3 w-3 rounded bg-neutral-300"></span>{{ t('panelCalendar.legend.blocked') }}
+          </span>
+          <span class="flex items-center gap-2">
+            <span class="h-3 w-3 rounded bg-orange-200"></span>{{ t('panelCalendar.legend.booked') }}
+          </span>
+        </div>
 
-    <ClientOnly>
-      <VCalendar :attributes="attributes" expanded @dayclick="onDayClick">
-        <template #day-content="{ day }">
-          <div
-            class="flex h-full w-full cursor-pointer flex-col items-center justify-center rounded"
-            :class="dayContentView(day.id).classes"
-          >
-            <span class="text-sm">{{ day.day }}</span>
-            <span v-if="dayContentView(day.id).priceLabel" class="text-[10px] leading-none">
-              {{ dayContentView(day.id).priceLabel }}
-            </span>
-          </div>
-        </template>
-      </VCalendar>
-    </ClientOnly>
+        <ClientOnly>
+          <VCalendar :attributes="attributes" expanded @dayclick="onDayClick">
+            <template #day-content="{ day }">
+              <div
+                class="flex h-full w-full cursor-pointer flex-col items-center justify-center rounded"
+                :class="dayContentView(day.id).classes"
+              >
+                <span class="text-sm">{{ day.day }}</span>
+                <span v-if="dayContentView(day.id).priceLabel" class="text-[10px] leading-none">
+                  {{ dayContentView(day.id).priceLabel }}
+                </span>
+              </div>
+            </template>
+          </VCalendar>
+        </ClientOnly>
 
-    <p class="mt-4 text-sm text-neutral-500">{{ t('panelCalendar.legend.noPrice') }}</p>
+        <p class="mt-4 text-sm text-neutral-500">{{ t('panelCalendar.legend.noPrice') }}</p>
+      </template>
+
+      <template #bookings>
+        <div class="flex flex-wrap gap-4 py-4 text-sm text-neutral-600">
+          <span class="flex items-center gap-2">
+            <span class="h-3 w-3 rounded bg-orange-200"></span>{{ t('panelCalendar.legend.booked') }}
+          </span>
+        </div>
+
+        <ClientOnly>
+          <VCalendar :attributes="bookingAttributes" expanded>
+            <template #day-content="{ day }">
+              <div
+                class="flex h-full w-full flex-col items-center justify-center rounded"
+                :class="bookingDayContentView(day.id).classes"
+              >
+                <span class="text-sm">{{ day.day }}</span>
+                <span
+                  v-if="bookingDayContentView(day.id).guestName"
+                  class="w-full truncate px-0.5 text-center text-[10px] leading-none"
+                >
+                  {{ bookingDayContentView(day.id).guestName }}
+                </span>
+              </div>
+            </template>
+          </VCalendar>
+        </ClientOnly>
+      </template>
+    </UTabs>
 
     <UModal
       v-model:open="isRangeActionOpen"

@@ -18,7 +18,11 @@ from app.schemas.booking import BookingCreate
 from app.schemas.owner import OwnerCreate
 from app.schemas.rate_rule import RateRuleCreate
 from app.services.apartment import ApartmentService
-from app.services.availability import AvailabilityService, InvalidAvailabilitySearchError
+from app.services.availability import (
+    AvailabilityService,
+    InvalidAvailabilitySearchError,
+    InvalidPricingCalendarRangeError,
+)
 from app.services.booking import BookingService
 from app.services.owner import OwnerService
 from app.services.rate_rule import RateRuleService
@@ -306,3 +310,162 @@ async def test_search_rejects_check_out_not_after_check_in(db_session: AsyncSess
 
     with pytest.raises(InvalidAvailabilitySearchError):
         await service.search(check_in, check_in - timedelta(days=1), guests=2)
+
+
+async def test_pricing_calendar_returns_correct_price_per_day(db_session: AsyncSession) -> None:
+    owner = await _make_owner(db_session)
+    apartment = await _make_apartment(db_session, owner.id)
+    from_date = date.today() + timedelta(days=100)
+    await _make_rate_rule(
+        db_session,
+        apartment.id,
+        start_date=from_date,
+        end_date=from_date + timedelta(days=2),
+        price_per_night=Decimal("100.00"),
+    )
+    await _make_rate_rule(
+        db_session,
+        apartment.id,
+        start_date=from_date + timedelta(days=3),
+        end_date=from_date + timedelta(days=5),
+        price_per_night=Decimal("150.00"),
+    )
+
+    service = _availability_service(db_session)
+    to_date = from_date + timedelta(days=5)
+    days = await service.get_pricing_calendar(apartment.id, from_date, to_date)
+
+    assert [d.date for d in days] == [from_date + timedelta(days=i) for i in range(6)]
+    assert [d.price for d in days] == [
+        Decimal("100.00"),
+        Decimal("100.00"),
+        Decimal("100.00"),
+        Decimal("150.00"),
+        Decimal("150.00"),
+        Decimal("150.00"),
+    ]
+    assert all(d.available for d in days)
+
+
+async def test_pricing_calendar_day_without_rate_rule_has_null_price(
+    db_session: AsyncSession,
+) -> None:
+    owner = await _make_owner(db_session)
+    apartment = await _make_apartment(db_session, owner.id)
+    from_date = date.today() + timedelta(days=110)
+    await _make_rate_rule(
+        db_session,
+        apartment.id,
+        start_date=from_date,
+        end_date=from_date,
+        price_per_night=Decimal("100.00"),
+    )
+
+    service = _availability_service(db_session)
+    days = await service.get_pricing_calendar(apartment.id, from_date, from_date + timedelta(days=1))
+
+    assert days[0].price == Decimal("100.00")
+    assert days[1].price is None
+    assert days[1].available is True
+
+
+async def test_pricing_calendar_blocked_date_is_unavailable(db_session: AsyncSession) -> None:
+    owner = await _make_owner(db_session)
+    apartment = await _make_apartment(db_session, owner.id)
+    from_date = date.today() + timedelta(days=120)
+    await _make_rate_rule(
+        db_session,
+        apartment.id,
+        start_date=from_date,
+        end_date=from_date + timedelta(days=4),
+        price_per_night=Decimal("100.00"),
+    )
+    await _make_blocked_date(
+        db_session, apartment.id, from_date + timedelta(days=1), from_date + timedelta(days=2)
+    )
+
+    service = _availability_service(db_session)
+    days = await service.get_pricing_calendar(apartment.id, from_date, from_date + timedelta(days=4))
+
+    assert [d.available for d in days] == [True, False, False, True, True]
+    # Blocking doesn't hide the price — it's still informational.
+    assert days[1].price == Decimal("100.00")
+
+
+async def test_pricing_calendar_confirmed_booking_is_unavailable_but_still_priced(
+    db_session: AsyncSession,
+) -> None:
+    owner = await _make_owner(db_session)
+    apartment = await _make_apartment(db_session, owner.id)
+    from_date = date.today() + timedelta(days=130)
+    await _make_rate_rule(
+        db_session,
+        apartment.id,
+        start_date=from_date,
+        end_date=from_date + timedelta(days=6),
+        price_per_night=Decimal("100.00"),
+    )
+    check_in = from_date + timedelta(days=1)
+    check_out = from_date + timedelta(days=3)
+    await _make_confirmed_booking(db_session, apartment.id, check_in, check_out)
+
+    service = _availability_service(db_session)
+    days = await service.get_pricing_calendar(apartment.id, from_date, from_date + timedelta(days=6))
+
+    # check_out_date itself is exclusive — the checkout day stays available.
+    assert [d.available for d in days] == [True, False, False, True, True, True, True]
+    assert days[1].price == Decimal("100.00")
+    assert days[2].price == Decimal("100.00")
+
+
+async def test_pricing_calendar_pending_booking_does_not_affect_availability(
+    db_session: AsyncSession,
+) -> None:
+    owner = await _make_owner(db_session)
+    apartment = await _make_apartment(db_session, owner.id)
+    from_date = date.today() + timedelta(days=140)
+    await _make_rate_rule(
+        db_session,
+        apartment.id,
+        start_date=from_date,
+        end_date=from_date + timedelta(days=4),
+        price_per_night=Decimal("100.00"),
+    )
+    booking_service = _booking_service(db_session)
+    await booking_service.create_booking(
+        BookingCreate(
+            apartment_id=apartment.id,
+            guest_full_name="Jane Guest",
+            guest_email="jane@example.com",
+            guest_count=2,
+            check_in_date=from_date + timedelta(days=1),
+            check_out_date=from_date + timedelta(days=3),
+        )
+    )
+
+    service = _availability_service(db_session)
+    days = await service.get_pricing_calendar(apartment.id, from_date, from_date + timedelta(days=4))
+
+    assert all(d.available for d in days)
+
+
+async def test_pricing_calendar_rejects_to_date_before_from_date(
+    db_session: AsyncSession,
+) -> None:
+    service = _availability_service(db_session)
+    owner = await _make_owner(db_session)
+    apartment = await _make_apartment(db_session, owner.id)
+    from_date = date.today() + timedelta(days=150)
+
+    with pytest.raises(InvalidPricingCalendarRangeError):
+        await service.get_pricing_calendar(apartment.id, from_date, from_date - timedelta(days=1))
+
+
+async def test_pricing_calendar_rejects_range_over_max_days(db_session: AsyncSession) -> None:
+    service = _availability_service(db_session)
+    owner = await _make_owner(db_session)
+    apartment = await _make_apartment(db_session, owner.id)
+    from_date = date.today() + timedelta(days=160)
+
+    with pytest.raises(InvalidPricingCalendarRangeError):
+        await service.get_pricing_calendar(apartment.id, from_date, from_date + timedelta(days=400))

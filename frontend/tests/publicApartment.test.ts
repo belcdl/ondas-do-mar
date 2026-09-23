@@ -37,6 +37,7 @@ describe('apartamentos/[id] public page', () => {
 
   it('shows the apartment name, photos and only the amenities it has', async () => {
     mockApi.mockResolvedValueOnce(PUBLIC_APARTMENT) // GET /apartments/:id/public
+    mockApi.mockResolvedValueOnce([]) // GET .../pricing-calendar (AvailabilityCalendar)
 
     const component = await mountSuspended(PublicApartmentPage)
 
@@ -63,6 +64,7 @@ describe('apartamentos/[id] public page', () => {
 
   it('opens the lightbox on the clicked photo, shown uncropped', async () => {
     mockApi.mockResolvedValueOnce(PUBLIC_APARTMENT)
+    mockApi.mockResolvedValueOnce([]) // GET .../pricing-calendar (AvailabilityCalendar)
 
     const component = await mountSuspended(PublicApartmentPage)
 
@@ -81,6 +83,7 @@ describe('apartamentos/[id] public page', () => {
 
   it('advances to the next photo when clicking the next button in the lightbox', async () => {
     mockApi.mockResolvedValueOnce(PUBLIC_APARTMENT)
+    mockApi.mockResolvedValueOnce([]) // GET .../pricing-calendar (AvailabilityCalendar)
 
     const component = await mountSuspended(PublicApartmentPage)
 

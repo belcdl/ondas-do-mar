@@ -1,4 +1,5 @@
 import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
+import { nextTick } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import CalendarPage from '../pages/panel/apartments/[id]/calendar.vue'
 
@@ -134,5 +135,28 @@ describe('panel/apartments/[id]/calendar page', () => {
         description: 'This date range overlaps an existing rate rule for this apartment',
       }),
     )
+  })
+
+  it('shows the guest name for a booked day on the bookings tab', async () => {
+    const component = await mountWithData()
+
+    // A night of the confirmed booking shows the guest's name...
+    expect(component.setupState.bookingDayContentView('2026-08-21').guestName).toBe('Jane Doe')
+    // ...but the checkout day itself is free again (same last-night semantics
+    // as the pricing tab's getDayInfo).
+    expect(component.setupState.bookingDayContentView('2026-08-23').guestName).toBeNull()
+    // A day only covered by a rate rule (no booking) shows no guest name —
+    // rateRules/blockedDates are ignored on this tab.
+    expect(component.setupState.bookingDayContentView('2026-08-05').guestName).toBeNull()
+  })
+
+  it('does not trigger a new API request when switching to the bookings tab', async () => {
+    const component = await mountWithData()
+    const callsBeforeSwitch = mockApi.mock.calls.length
+
+    component.setupState.activeTab = 'bookings'
+    await nextTick()
+
+    expect(mockApi.mock.calls.length).toBe(callsBeforeSwitch)
   })
 })

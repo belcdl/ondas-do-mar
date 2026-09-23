@@ -140,6 +140,19 @@ class RateRuleService:
         rate_rules = await self.repository.list_by_apartment(apartment_id)
         return list(rate_rules)
 
+    async def list_rate_rules_covering_range(
+        self, apartment_id: uuid.UUID, start_date: date, end_date: date
+    ) -> list[RateRule]:
+        """Rate rules pricing at least one day in [start_date, end_date]
+        (both inclusive). Thin wrapper around the repository's
+        list_covering_range, kept here so callers outside this service (e.g.
+        AvailabilityService.get_pricing_calendar) go through the service
+        layer rather than reaching into RateRuleRepository directly —
+        price_stay uses the repository method straight since it's already
+        inside this service."""
+        rate_rules = await self.repository.list_covering_range(apartment_id, start_date, end_date)
+        return list(rate_rules)
+
     async def update_rate_rule(self, rate_rule_id: uuid.UUID, data: RateRuleUpdate) -> RateRule:
         rate_rule = await self.get_rate_rule(rate_rule_id)
 

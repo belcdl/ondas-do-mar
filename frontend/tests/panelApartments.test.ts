@@ -71,6 +71,7 @@ describe('panel/apartments/index page', () => {
         max_guests: 4,
         amenities: ['wifi', 'tv'],
         amenities_other: 'Portable air conditioning unit',
+        check_in_instructions: null,
         owner_id: 'owner-1',
       },
     })
